@@ -1,0 +1,46 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Mapping {
+  id           Int     @id @default(autoincrement())
+  name         String  @unique @db.VarChar(255)
+  label        String? @db.VarChar(255)
+  hubspotName  String? @db.VarChar(255)
+  hubspotLabel String? @db.VarChar(255)
+}
+
+model Authorization {
+  customerId   String    @id @db.VarChar(255)
+  hsPortalId   String    @db.VarChar(255)
+  accessToken  String    @db.VarChar(255)
+  refreshToken String    @db.VarChar(255)
+  expiresIn    Int?
+  expiresAt    DateTime? @db.Timestamp(6)
+}
+
+model Properties {
+  name   String       @unique @db.VarChar(255)
+  label  String?      @db.VarChar(255)
+  type   PropertyType
+  object Objects
+
+  @@unique([name, object])
+}
+
+enum PropertyType {
+  String
+  Number
+  Option
+
+}
+
+enum Objects {
+  Company
+  Contact
+}

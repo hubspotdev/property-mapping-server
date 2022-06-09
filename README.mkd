@@ -27,3 +27,10 @@ npm run build
 ```
 npm run prod
 ```
+## DB Set Up
+
+must have database up and running
+
+npx prisma db push (creates schema)
+
+npx prisma db seed (adds data)
