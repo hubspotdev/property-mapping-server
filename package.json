@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "nodemon src/app.ts",
     "prod": "node dist/app.js",
-    "build": "tsc"
+    "build": "tsc",
+    "seed": "npx prisma db seed"
   },
   "author": "",
   "license": "ISC",
