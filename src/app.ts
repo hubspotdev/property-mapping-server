@@ -106,6 +106,7 @@ const getNativeProperties = async (customerId: string) => {
             name: true,
             label: true,
             type: true,
+            object: true
 
         }
     })
