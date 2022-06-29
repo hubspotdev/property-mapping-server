@@ -25,7 +25,7 @@ model Authorization {
 }
 
 model Properties {
-  name   String       @unique @db.VarChar(255)
+  name   String       @db.VarChar(255)
   label  String?      @db.VarChar(255)
   type   PropertyType
   object Objects

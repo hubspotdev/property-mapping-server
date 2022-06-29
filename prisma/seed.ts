@@ -3,7 +3,12 @@ const prisma = new PrismaClient()
 
 async function main() {
     const firstname = await prisma.properties.upsert({
-        where: { name: "firstname" },
+        where: {
+            name_object: {
+                name: "firstname",
+                object: "Contact"
+            }
+        },
         update: {},
         create: {
             name: "firstname",
@@ -12,10 +17,16 @@ async function main() {
             object: "Contact"
         }
     })
+    console.log(firstname)
 
 
     const lastname = await prisma.properties.upsert({
-        where: { name: "lastname" },
+        where: {
+            name_object: {
+                name: "lastname",
+                object: "Contact"
+            }
+        },
         update: {},
         create: {
             name: "lastname",
@@ -24,6 +35,7 @@ async function main() {
             object: "Contact"
         }
     })
+    console.log(lastname)
     const exampleCustom = await prisma.properties.upsert({
         where: {
             name_object: {
@@ -39,39 +51,40 @@ async function main() {
             object: "Contact"
         }
     })
+    console.log(exampleCustom)
     const customCompany = await prisma.properties.upsert({
         where: {
             name_object: {
-                name: "example_custom",
+                name: "example_custom_company",
                 object: "Company"
             }
         },
         update: {},
         create: {
-            name: "example_custom",
+            name: "example_custom_company",
             label: "Example Custom Property",
             type: "String",
             object: "Company"
         }
     })
-
+    console.log(customCompany)
     const companyName = await prisma.properties.upsert({
         where: {
             name_object: {
-                name: "name",
+                name: "company_name",
                 object: "Company"
             }
         },
         update: {},
         create: {
-            name: "name",
+            name: "company_name",
             label: "Name",
             type: "String",
             object: "Company"
         }
     }
     )
-
+    console.log(companyName)
     const industry = await prisma.properties.upsert({
         where: {
             name_object: {
@@ -87,6 +100,7 @@ async function main() {
             object: "Company"
         }
     })
+    console.log(industry)
     const num_employees = await prisma.properties.upsert({
         where: {
             name_object: {
@@ -103,6 +117,8 @@ async function main() {
         }
     }
     )
+    console.log(num_employees)
+
 }
 
 main()
