@@ -1,7 +1,7 @@
 import 'dotenv/config'
 import express, { Application, Request, Response } from 'express'
 import axios, { AxiosRequestConfig, Axios, AxiosRequestHeaders } from 'axios'
-import { Authorization, PrismaClient } from '@prisma/client'
+import { Authorization, PrismaClient, Objects } from '@prisma/client'
 import qs from 'qs'
 import * as hubspot from '@hubspot/api-client'
 
@@ -89,8 +89,9 @@ app.get('/api/hubspot-properties', async (req: Request, res: Response) => {
     res.send(properties)
 })
 
-app.get('/api/native-properties', async (req: Request, res: Response) => {
-    const properties = await getNativeProperties("1")
+app.get('/api/native-properties/:objectType', async (req: Request, res: Response) => {
+    const {objectType} = req.params
+    const properties = await getNativeProperties("1", objectType)
     res.send(properties)
 })
 
@@ -100,7 +101,8 @@ app.post("/api/mappings", async (req: Request, res: Response) => {
     res.send(req.body)
 })
 
-const getNativeProperties = async (customerId: string) => {
+const getNativeProperties = async (customerId: string, object: Objects) => {
+    
     const properties = await prisma.properties.findMany({
         select: {
             name: true,
@@ -108,6 +110,10 @@ const getNativeProperties = async (customerId: string) => {
             type: true,
             object: true
 
+        },
+        where:{
+            object,
+            customerId
         }
     })
     return properties

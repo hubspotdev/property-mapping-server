@@ -4,9 +4,10 @@ const prisma = new PrismaClient()
 async function main() {
     const firstname = await prisma.properties.upsert({
         where: {
-            name_object: {
+            name_object_customerId: {
                 name: "firstname",
-                object: "Contact"
+                object: "Contact",
+                customerId: "1"
             }
         },
         update: {},
@@ -14,7 +15,8 @@ async function main() {
             name: "firstname",
             label: "First Name",
             type: "String",
-            object: "Contact"
+            object: "Contact",
+            customerId: "1"
         }
     })
     console.log(firstname)
@@ -22,9 +24,10 @@ async function main() {
 
     const lastname = await prisma.properties.upsert({
         where: {
-            name_object: {
+            name_object_customerId: {
                 name: "lastname",
-                object: "Contact"
+                object: "Contact",
+                customerId: "1"
             }
         },
         update: {},
@@ -32,15 +35,17 @@ async function main() {
             name: "lastname",
             label: "Last Name",
             type: "String",
-            object: "Contact"
+            object: "Contact",
+            customerId: "1"
         }
     })
     console.log(lastname)
     const exampleCustom = await prisma.properties.upsert({
         where: {
-            name_object: {
+            name_object_customerId: {
                 name: "example_custom",
-                object: "Contact"
+                object: "Contact",
+                customerId: "1"
             }
         },
         update: {},
@@ -48,15 +53,17 @@ async function main() {
             name: "example_custom",
             label: "Example Custom Property",
             type: "String",
-            object: "Contact"
+            object: "Contact",
+            customerId: "1"
         }
     })
     console.log(exampleCustom)
     const customCompany = await prisma.properties.upsert({
         where: {
-            name_object: {
+            name_object_customerId: {
                 name: "example_custom_company",
-                object: "Company"
+                object: "Company",
+                customerId: "1"
             }
         },
         update: {},
@@ -64,15 +71,17 @@ async function main() {
             name: "example_custom_company",
             label: "Example Custom Property",
             type: "String",
-            object: "Company"
+            object: "Company",
+            customerId: "1"
         }
     })
     console.log(customCompany)
     const companyName = await prisma.properties.upsert({
         where: {
-            name_object: {
+            name_object_customerId: {
                 name: "company_name",
-                object: "Company"
+                object: "Company",
+                customerId: "1"
             }
         },
         update: {},
@@ -80,16 +89,18 @@ async function main() {
             name: "company_name",
             label: "Name",
             type: "String",
-            object: "Company"
+            object: "Company",
+            customerId: "1"
         }
     }
     )
     console.log(companyName)
     const industry = await prisma.properties.upsert({
         where: {
-            name_object: {
+            name_object_customerId: {
                 name: "industry",
-                object: "Company"
+                object: "Company",
+                customerId: "1"
             }
         },
         update: {},
@@ -97,15 +108,17 @@ async function main() {
             name: "industry",
             label: "Industry",
             type: "String",
-            object: "Company"
+            object: "Company",
+            customerId: "1"
         }
     })
     console.log(industry)
     const num_employees = await prisma.properties.upsert({
         where: {
-            name_object: {
+            name_object_customerId: {
                 name: "num_employees",
-                object: "Company"
+                object: "Company",
+                customerId: "1"
             }
         },
         update: {},
@@ -113,7 +126,8 @@ async function main() {
             name: "num_employees",
             label: "Number of Employees",
             type: "Number",
-            object: "Company"
+            object: "Company",
+            customerId: "1"
         }
     }
     )

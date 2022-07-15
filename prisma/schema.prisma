@@ -25,12 +25,14 @@ model Authorization {
 }
 
 model Properties {
-  name   String       @db.VarChar(255)
-  label  String?      @db.VarChar(255)
-  type   PropertyType
-  object Objects
+  name       String       @db.VarChar(255)
+  label      String?      @db.VarChar(255)
+  type       PropertyType
+  object     Objects
+  customerId String       @id @db.VarChar(255)
 
-  @@unique([name, object])
+
+  @@unique([name, object, customerId])
 }
 
 enum PropertyType {
