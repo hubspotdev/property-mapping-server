@@ -26,12 +26,10 @@ const PORT: number = 3001
 const SCOPES = [
     "crm.schemas.companies.write",
     "crm.schemas.contacts.write",
-    "crm.schemas.deals.write",
+
     "crm.schemas.companies.read",
     "crm.schemas.contacts.read",
-    "crm.schemas.deals.read",
-    "crm.schemas.line_items.read",
-    "crm.schemas.quotes.read"];
+];
 
 const REDIRECT_URI: string = `http://localhost:${PORT}/oauth-callback`;
 const authUrl =
@@ -129,15 +127,9 @@ const getHubSpotProperties = async (customerId: string) => {
     try {
         const contactProperties = (await hubspotClient.crm.properties.coreApi.getAll("contacts")).results
         const companyProperties = (await hubspotClient.crm.properties.coreApi.getAll("companies")).results
-        const dealProperties = (await hubspotClient.crm.properties.coreApi.getAll("deals")).results
-        const lineItemProperties = (await hubspotClient.crm.properties.coreApi.getAll("line_items")).results
-        const quoteProperties = (await hubspotClient.crm.properties.coreApi.getAll("quotes")).results
         return {
             contactProperties,
             companyProperties,
-            dealProperties,
-            lineItemProperties,
-            quoteProperties
         }
 
     } catch (error) {
