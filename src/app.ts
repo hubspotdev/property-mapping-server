@@ -88,14 +88,10 @@ app.get("/api/hubspot-properties", async (req: Request, res: Response) => {
   res.send(properties);
 });
 
-app.get(
-  "/api/native-properties/:objectType",
-  async (req: Request, res: Response) => {
-    const objectType = req.params.objectType as Objects;
-    const properties = await getNativeProperties("1", objectType);
-    res.send(properties);
-  }
-);
+app.get("/api/native-properties/", async (req: Request, res: Response) => {
+  const properties = await getNativeProperties("1");
+  res.send(properties);
+});
 
 app.post("/api/mappings", async (req: Request, res: Response) => {
   console.log(req.headers);
@@ -103,7 +99,7 @@ app.post("/api/mappings", async (req: Request, res: Response) => {
   res.send(req.body);
 });
 
-const getNativeProperties = async (customerId: string, object: Objects) => {
+const getNativeProperties = async (customerId: string) => {
   const properties = await prisma.properties.findMany({
     select: {
       name: true,
@@ -112,7 +108,6 @@ const getNativeProperties = async (customerId: string, object: Objects) => {
       object: true,
     },
     where: {
-      object,
       customerId,
     },
   });
