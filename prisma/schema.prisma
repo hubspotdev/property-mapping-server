@@ -29,7 +29,7 @@ model Properties {
   label      String?      @db.VarChar(255)
   type       PropertyType
   object     Objects
-  customerId String       @id @db.VarChar(255)
+  customerId String       @db.VarChar(255)
 
 
   @@unique([name, object, customerId])

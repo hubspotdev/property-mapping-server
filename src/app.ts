@@ -5,6 +5,18 @@ import { Authorization, PrismaClient, Objects } from "@prisma/client";
 import qs from "qs";
 import * as hubspot from "@hubspot/api-client";
 
+interface Property {
+  name?: string;
+  label?: string;
+  type?: string;
+  object?: string;
+}
+
+interface Mapping {
+  name: string;
+  property: Property;
+}
+
 const prisma = new PrismaClient();
 const CLIENT_ID: string = process.env.CLIENT_ID || "CLIENT_ID required";
 const CLIENT_SECRET: string =
@@ -96,8 +108,41 @@ app.get("/api/native-properties/", async (req: Request, res: Response) => {
 app.post("/api/mappings", async (req: Request, res: Response) => {
   console.log(req.headers);
   console.log(req.body);
-  res.send(req.body);
+  const response = await saveMappings(req.body.mappingsPayload as Mapping[]);
+  res.send(response);
 });
+
+const saveMappings = async (mappingsInput: Mapping[]) => {
+  console.log(mappingsInput.length);
+  if (mappingsInput.length > 0) {
+    const mappingResults = mappingsInput.map((maybeMapping) => {
+      console.log("maybemapping", maybeMapping);
+
+      const mappingName = Object.keys(maybeMapping)[0];
+      const hubspotInfo = Object.values(maybeMapping)[0];
+
+      const mappingResult = prisma.mapping.upsert({
+        where: {
+          name: mappingName,
+        },
+        update: {
+          hubspotLabel: hubspotInfo.label,
+          hubspotName: hubspotInfo.name,
+        },
+        create: {
+          hubspotLabel: hubspotInfo.label,
+          hubspotName: hubspotInfo.name,
+          name: mappingName,
+        },
+      });
+
+      return mappingResult;
+    });
+
+    return await Promise.all(mappingResults);
+  }
+  return null;
+};
 
 const getNativeProperties = async (customerId: string) => {
   const properties = await prisma.properties.findMany({
@@ -119,15 +164,7 @@ const getHubSpotProperties = async (customerId: string) => {
   console.log(accessToken);
 
   const hubspotClient = new hubspot.Client({ accessToken });
-  const newToken = await hubspotClient.oauth.tokensApi.createToken(
-    "refresh_token",
-    undefined,
-    REDIRECT_URI,
-    CLIENT_ID,
-    CLIENT_SECRET,
-    "eu1-aec7-44e7-4a36-99b4-aba5e28e8cca"
-  );
-  console.log(newToken);
+
   try {
     const contactProperties = (
       await hubspotClient.crm.properties.coreApi.getAll("contacts")
