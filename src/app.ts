@@ -108,20 +108,43 @@ app.get("/api/native-properties/", async (req: Request, res: Response) => {
 app.post("/api/mappings", async (req: Request, res: Response) => {
   console.log(req.headers);
   console.log(req.body);
-  const response = await saveMappings(req.body.mappingsPayload as Mapping[]);
+  const response = await saveMappings(req.body as Mapping[]);
+  console.log("save mappings response", response);
   res.send(response);
 });
 
+app.get("/api/mappings", async (req: Request, res: Response) => {
+  const mappings = await getMappings();
+  const formattedMappings = mappings.map((mapping) => {
+    const { name, hubspotLabel, hubspotName } = mapping;
+    return { name, property: { name: hubspotName, label: hubspotLabel } };
+  });
+  res.send(formattedMappings);
+});
+
+const getMappings = async () => {
+  const mappings = await prisma.mapping.findMany({
+    select: {
+      name: true,
+      hubspotLabel: true,
+      hubspotName: true,
+    },
+  });
+  return mappings;
+};
+
 const saveMappings = async (mappingsInput: Mapping[]) => {
-  console.log(mappingsInput.length);
+  console.log(mappingsInput);
+
   if (mappingsInput.length > 0) {
-    const mappingResults = mappingsInput.map((maybeMapping) => {
+    const mappingResults = mappingsInput.map(async (maybeMapping) => {
       console.log("maybemapping", maybeMapping);
 
-      const mappingName = Object.keys(maybeMapping)[0];
-      const hubspotInfo = Object.values(maybeMapping)[0];
-
-      const mappingResult = prisma.mapping.upsert({
+      const mappingName = maybeMapping.name;
+      const hubspotInfo = maybeMapping.property;
+      console.log("mapping name", mappingName);
+      console.log("hubspotINfo", hubspotInfo);
+      const mappingResult = await prisma.mapping.upsert({
         where: {
           name: mappingName,
         },
@@ -136,7 +159,7 @@ const saveMappings = async (mappingsInput: Mapping[]) => {
         },
       });
 
-      return mappingResult;
+      return await mappingResult;
     });
 
     return await Promise.all(mappingResults);
@@ -172,6 +195,7 @@ const getHubSpotProperties = async (customerId: string) => {
     const companyProperties = (
       await hubspotClient.crm.properties.coreApi.getAll("companies")
     ).results;
+    console.log(contactProperties.length);
     return {
       contactProperties,
       companyProperties,
