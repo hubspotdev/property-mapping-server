@@ -9,10 +9,14 @@ generator client {
 
 model Mapping {
   id           Int     @id @default(autoincrement())
-  name         String  @unique @db.VarChar(255)
+  name         String  @db.VarChar(255)
   label        String? @db.VarChar(255)
   hubspotName  String? @db.VarChar(255)
   hubspotLabel String? @db.VarChar(255)
+  object       Objects
+  customerId   String  @db.VarChar(255)
+
+  @@unique([name, object, customerId])
 }
 
 model Authorization {

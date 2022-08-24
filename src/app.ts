@@ -4,12 +4,13 @@ import axios, { AxiosRequestConfig, Axios, AxiosRequestHeaders } from "axios";
 import { Authorization, PrismaClient, Objects } from "@prisma/client";
 import qs from "qs";
 import * as hubspot from "@hubspot/api-client";
+import { BatchReadInputSimplePublicObjectId } from "@hubspot/api-client/lib/codegen/crm/objects";
 
 interface Property {
-  name?: string;
-  label?: string;
+  name: string;
+  label: string;
   type?: string;
-  object?: string;
+  object: Objects;
 }
 
 interface Mapping {
@@ -142,11 +143,18 @@ const saveMappings = async (mappingsInput: Mapping[]) => {
 
       const mappingName = maybeMapping.name;
       const hubspotInfo = maybeMapping.property;
+      const object = maybeMapping.property.object || "Contact";
+      const getCustomerId = () => "1"; // faking this because building an account provisiong/login system is out of scope
+      const customerId = getCustomerId();
       console.log("mapping name", mappingName);
       console.log("hubspotINfo", hubspotInfo);
       const mappingResult = await prisma.mapping.upsert({
         where: {
-          name: mappingName,
+          name_object_customerId: {
+            name: mappingName,
+            customerId: customerId,
+            object: object,
+          },
         },
         update: {
           hubspotLabel: hubspotInfo.label,
@@ -156,6 +164,8 @@ const saveMappings = async (mappingsInput: Mapping[]) => {
           hubspotLabel: hubspotInfo.label,
           hubspotName: hubspotInfo.name,
           name: mappingName,
+          object: object,
+          customerId: customerId,
         },
       });
 
@@ -195,7 +205,7 @@ const getHubSpotProperties = async (customerId: string) => {
     const companyProperties = (
       await hubspotClient.crm.properties.coreApi.getAll("companies")
     ).results;
-    console.log(contactProperties.length);
+
     return {
       contactProperties,
       companyProperties,
