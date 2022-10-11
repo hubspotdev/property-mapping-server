@@ -1,12 +1,40 @@
 import { getAccessToken } from "./auth";
 import { hubspotClient, prisma } from "./clients";
 
-const getHubSpotProperties = async (customerId: string) => {
-  const accessToken: string | Error = await getAccessToken(customerId);
-  console.log(accessToken);
-  if (accessToken instanceof Error) {
-    return false;
+const createPropertyGroup = async (accessToken: string) => {
+  hubspotClient.setAccessToken(accessToken);
+  try {
+    const propertyGroupCreateResponse =
+      await hubspotClient.crm.properties.groupsApi.create("contact", {
+        name: "integration Properties",
+        label: "Integration Properties",
+      });
+  } catch (error) {
+    console.error(error);
   }
+};
+
+const createRequiredProperty = async (accessToken: string) => {
+  hubspotClient.setAccessToken(accessToken);
+  try {
+    const propertyCreateResponse =
+      await hubspotClient.crm.properties.coreApi.create("contact", {
+        name: "example_required",
+        label: "Example Required",
+        type: "string",
+        description: "This property is required for the integration to work",
+        fieldType: "text",
+        groupName: "integrationProperties",
+      });
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+const getHubSpotProperties = async (customerId: string) => {
+  const accessToken: string = await getAccessToken(customerId);
+  console.log(accessToken);
+
   hubspotClient.setAccessToken(accessToken);
 
   try {
@@ -42,4 +70,9 @@ const getNativeProperties = async (customerId: string) => {
   return properties;
 };
 
-export { getHubSpotProperties, getNativeProperties };
+export {
+  getHubSpotProperties,
+  getNativeProperties,
+  createPropertyGroup,
+  createRequiredProperty,
+};

@@ -49,7 +49,7 @@ const getExpiresAt = (expiresIn: number): Date => {
   return new Date(now.getTime() + expiresIn * 1000);
 };
 
-const redeemCode = async (code: string): Promise<Authorization | unknown> => {
+const redeemCode = async (code: string): Promise<Authorization> => {
   return await exchangeForTokens({
     ...EXCHANGE_CONSTANTS,
     code,
@@ -71,7 +71,7 @@ const getHubSpotId = async (accessToken: string) => {
 
 const exchangeForTokens = async (
   exchangeProof: ExchangeProof
-): Promise<Authorization | Error> => {
+): Promise<Authorization> => {
   const {
     code,
     redirect_uri,
@@ -127,7 +127,7 @@ const exchangeForTokens = async (
   }
 };
 
-const getAccessToken = async (customerId: string): Promise<string | Error> => {
+const getAccessToken = async (customerId: string): Promise<string> => {
   try {
     const currentCreds = (await prisma.authorization.findFirst({
       select: {
