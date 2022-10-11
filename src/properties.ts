@@ -6,8 +6,9 @@ const createPropertyGroup = async (accessToken: string) => {
   try {
     const propertyGroupCreateResponse =
       await hubspotClient.crm.properties.groupsApi.create("contact", {
-        name: "integration Properties",
+        name: "integration_properties",
         label: "Integration Properties",
+        displayOrder: 13,
       });
   } catch (error) {
     console.error(error);
@@ -24,7 +25,7 @@ const createRequiredProperty = async (accessToken: string) => {
         type: "string",
         description: "This property is required for the integration to work",
         fieldType: "text",
-        groupName: "integrationProperties",
+        groupName: "integration_properties",
       });
   } catch (error) {
     console.error(error);
