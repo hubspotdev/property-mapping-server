@@ -8,9 +8,16 @@ declare module "default" {
   interface Mapping {
     name: string;
     property: Property;
+    direction: Direction;
   }
   enum Objects {
     Contact = "Contact",
     Company = "Company",
+  }
+
+  enum Direction {
+    toHubSpot = "toHubSpot",
+    toNative = "toNative",
+    biDirectional = "biDirectional",
   }
 }

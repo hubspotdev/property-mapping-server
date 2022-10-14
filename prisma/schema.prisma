@@ -8,13 +8,14 @@ generator client {
 }
 
 model Mapping {
-  id           Int     @id @default(autoincrement())
-  name         String  @db.VarChar(255)
-  label        String? @db.VarChar(255)
-  hubspotName  String? @db.VarChar(255)
-  hubspotLabel String? @db.VarChar(255)
+  id           Int       @id @default(autoincrement())
+  name         String    @db.VarChar(255)
+  label        String?   @db.VarChar(255)
+  hubspotName  String?   @db.VarChar(255)
+  hubspotLabel String?   @db.VarChar(255)
   object       Objects
-  customerId   String  @db.VarChar(255)
+  customerId   String    @db.VarChar(255)
+  direction    Direction
 
   @@unique([name, object, customerId])
 }
@@ -35,7 +36,6 @@ model Properties {
   object     Objects
   customerId String       @db.VarChar(255)
 
-
   @@unique([name, object, customerId])
 }
 
@@ -43,10 +43,15 @@ enum PropertyType {
   String
   Number
   Option
-
 }
 
 enum Objects {
   Company
   Contact
+}
+
+enum Direction {
+  toHubSpot
+  toNative
+  biDirectional
 }

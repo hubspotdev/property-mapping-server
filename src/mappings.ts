@@ -33,6 +33,7 @@ const saveMappings = async (mappingsInput: Mapping[]) => {
       const mappingName = maybeMapping.name;
       const hubspotInfo = maybeMapping.property;
       const object = maybeMapping.property.object;
+      const direction = maybeMapping.direction;
       const customerId = getCustomerId();
 
       const mappingResult = await prisma.mapping.upsert({
@@ -46,6 +47,7 @@ const saveMappings = async (mappingsInput: Mapping[]) => {
         update: {
           hubspotLabel: hubspotInfo.label,
           hubspotName: hubspotInfo.name,
+          direction: direction,
         },
         create: {
           hubspotLabel: hubspotInfo.label,
@@ -53,6 +55,7 @@ const saveMappings = async (mappingsInput: Mapping[]) => {
           name: mappingName,
           object: object,
           customerId: customerId,
+          direction: direction,
         },
       });
 
