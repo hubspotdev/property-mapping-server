@@ -59,7 +59,7 @@ const saveMappings = async (mappingsInput: Mapping[]) => {
         },
       });
 
-      return await mappingResult;
+      return mappingResult;
     });
 
     return await Promise.all(mappingResults);

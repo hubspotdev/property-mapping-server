@@ -1,5 +1,8 @@
+import { HubSpotProperty } from "default";
 import { getAccessToken } from "./auth";
 import { hubspotClient, prisma } from "./clients";
+
+const TTL = 5 * 60 * 1000; // 5 Minute TTL in milliseconds
 
 const createPropertyGroup = async (accessToken: string) => {
   hubspotClient.setAccessToken(accessToken);
@@ -32,27 +35,66 @@ const createRequiredProperty = async (accessToken: string) => {
   }
 };
 
+const checkPropertiesCache = async (customerId: string) => {
+  const cacheResults = await prisma.hubSpotPropertiesCache.findFirst({
+    where: { customerId },
+    select: { updatedAt: true, propertyData: true },
+  });
+  const now = new Date();
+  const updatedAt = cacheResults?.updatedAt ?? new Date(0);
+  return {
+    expired: now.getTime() - updatedAt.getTime() > TTL,
+    propertyData: cacheResults?.propertyData,
+  };
+};
+
+const saveHubSpotPropertiesToCache = async (
+  customerId: string,
+  propertyData: any
+) => {
+  const results = await prisma.hubSpotPropertiesCache.upsert({
+    where: { customerId },
+    update: { propertyData },
+    create: {
+      customerId,
+      propertyData,
+    },
+  });
+  console.log(results);
+  return results;
+};
+
 const getHubSpotProperties = async (customerId: string) => {
+  // const propertiesCacheIsValid = await checkPropertiesCache(customerId);
+
   const accessToken: string = await getAccessToken(customerId);
   console.log(accessToken);
 
   hubspotClient.setAccessToken(accessToken);
-
-  try {
-    const contactProperties = (
-      await hubspotClient.crm.properties.coreApi.getAll("contacts")
-    ).results;
-    const companyProperties = (
-      await hubspotClient.crm.properties.coreApi.getAll("companies")
-    ).results;
-
-    return {
-      contactProperties,
-      companyProperties,
-    };
-  } catch (error) {
-    console.error(error);
-    return error;
+  // add DB call to check if we've looked in the last 5 minutes
+  // https://www.prisma.io/docs/reference/api-reference/prisma-schema-reference#updatedat
+  const cacheResults = await checkPropertiesCache(customerId);
+  if (cacheResults.expired) {
+    try {
+      const contactProperties = (
+        await hubspotClient.crm.properties.coreApi.getAll("contacts")
+      ).results;
+      const companyProperties = (
+        await hubspotClient.crm.properties.coreApi.getAll("companies")
+      ).results;
+      saveHubSpotPropertiesToCache(customerId, {
+        contactProperties,
+        companyProperties,
+      });
+      return {
+        contactProperties,
+        companyProperties,
+      };
+    } catch (error) {
+      console.error(error);
+    }
+  } else {
+    return cacheResults?.propertyData;
   }
 };
 

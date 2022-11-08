@@ -39,6 +39,13 @@ model Properties {
   @@unique([name, object, customerId])
 }
 
+model HubSpotPropertiesCache {
+  id           Int      @id @default(autoincrement())
+  customerId   String   @unique @db.VarChar(255)
+  updatedAt    DateTime @updatedAt
+  propertyData Json
+}
+
 enum PropertyType {
   String
   Number

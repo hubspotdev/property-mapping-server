@@ -50,6 +50,7 @@ app.get("/api/native-properties/", async (req: Request, res: Response) => {
 
 app.post("/api/mappings", async (req: Request, res: Response) => {
   const response = await saveMappings(req.body as Mapping[]);
+  console.log("mapping save response", response);
   res.send(response);
 });
 

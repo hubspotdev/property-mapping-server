@@ -20,4 +20,32 @@ declare module "default" {
     toNative = "toNative",
     biDirectional = "biDirectional",
   }
+
+  export interface ModificationMetadata {
+    archivable: boolean;
+    readOnlyDefinition: boolean;
+    readOnlyValue: boolean;
+  }
+
+  export interface HubSpotProperty {
+    updatedAt: Date;
+    createdAt: Date;
+    name: string;
+    label: string;
+    type: string;
+    fieldType: string;
+    description: string;
+    groupName: string;
+    options: any[];
+    createdUserId: string;
+    updatedUserId: string;
+    displayOrder: number;
+    calculated: boolean;
+    externalOptions: boolean;
+    archived: boolean;
+    hasUniqueValue: boolean;
+    hidden: boolean;
+    modificationMetadata: ModificationMetadata;
+    formField: boolean;
+  }
 }
