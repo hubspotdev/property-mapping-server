@@ -10,7 +10,11 @@ import {
 } from "./properties";
 import { saveMapping, getMappings, deleteMapping } from "./mappings";
 import { PORT, getCustomerId } from "./utils";
+<<<<<<< HEAD
 import { Mapping, Properties } from "@prisma/client";
+=======
+import { Mapping } from "@prisma/client";
+>>>>>>> 32fb2ac (udpate for demo)
 
 const app: Application = express();
 app.use(express.json());
@@ -67,9 +71,17 @@ app.get(
 app.post("/api/mappings", async (req: Request, res: Response) => {
   const response = await saveMapping(req.body as Mapping);
   console.log("mapping save response", response);
+<<<<<<< HEAD
+=======
+
+>>>>>>> 32fb2ac (udpate for demo)
   if (response instanceof Error) {
     res.status(500).send("Unkown Error");
   }
+<<<<<<< HEAD
+=======
+
+>>>>>>> 32fb2ac (udpate for demo)
   res.send(response);
 });
 
@@ -85,8 +97,12 @@ app.delete("/api/mappings/:mappingId", async (req: Request, res: Response) => {
 });
 
 app.get("/api/mappings", async (req: Request, res: Response) => {
+<<<<<<< HEAD
   const customerId = getCustomerId();
   const mappings = await getMappings(customerId);
+=======
+  const mappings = await getMappings(getCustomerId());
+>>>>>>> 32fb2ac (udpate for demo)
   const formattedMappings = mappings.map((mapping) => {
     const { nativeName, hubspotLabel, hubspotName, id, object } = mapping;
     return {
