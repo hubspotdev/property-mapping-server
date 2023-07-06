@@ -1,15 +1,28 @@
 declare module "default" {
   interface Property {
     name: string;
-    label: string;
+    label?: string | null;
     type?: string;
     object: Objects;
   }
+  // interface Mapping {
+  //   nativeName: string;
+  //   hubspotProperty: Property;
+  //   direction: Direction;
+  // }
   interface Mapping {
-    name: string;
-    property: Property;
+    id: number;
+    nativeName?: string;
+    hubspotName?: string;
+    object: Object;
+    customerId: string;
     direction: Direction;
   }
+  interface PropertyWithMapping {
+    property: Property;
+    mapping?: Mapping;
+  }
+
   enum Objects {
     Contact = "Contact",
     Company = "Company",

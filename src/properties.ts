@@ -1,4 +1,4 @@
-import { HubSpotProperty } from "default";
+import { Properties } from "@prisma/client";
 import { getAccessToken } from "./auth";
 import { hubspotClient, prisma } from "./clients";
 
@@ -105,6 +105,7 @@ const getNativeProperties = async (customerId: string) => {
       label: true,
       type: true,
       object: true,
+      customerId: true,
     },
     where: {
       customerId,

@@ -1,15 +1,19 @@
-import { Mapping } from "default";
 import { prisma } from "./clients";
 import { getCustomerId } from "./utils";
-
-const getMappings = async () => {
-  const mappings = await prisma.mapping.findMany({
+import { Mapping } from "@prisma/client";
+const getMappings = async (customerId: string) => {
+  const mappings: Mapping[] = await prisma.mapping.findMany({
     select: {
-      name: true,
+      nativeName: true,
       hubspotLabel: true,
       hubspotName: true,
       id: true,
       object: true,
+      direction: true,
+      customerId: true,
+    },
+    where: {
+      customerId,
     },
   });
   console.log(mappings);
@@ -25,34 +29,73 @@ const deleteMapping = async (mappingId: number) => {
   return deleteResults;
 };
 
-const saveMappings = async (mappingsInput: Mapping[]) => {
+const saveMapping = async (maybeMapping: Mapping): Promise<Mapping | Error> => {
+  console.log("maybeMapping", maybeMapping);
+  const mappingName = maybeMapping.nativeName;
+  const hubspotName = maybeMapping.hubspotName;
+  const hubspotLabel = maybeMapping.hubspotLabel;
+  const object = maybeMapping.object || "Contact";
+  const direction = maybeMapping.direction;
+  const customerId = getCustomerId();
+  try {
+    const mappingResult = await prisma.mapping.upsert({
+      where: {
+        nativeName_object_customerId: {
+          nativeName: mappingName,
+          customerId: customerId,
+          object: object,
+        },
+      },
+      update: {
+        hubspotLabel,
+        hubspotName,
+        direction,
+      },
+      create: {
+        hubspotLabel,
+        hubspotName,
+        nativeName: mappingName,
+        object: object,
+        customerId: customerId,
+        direction: direction,
+      },
+    });
+
+    return mappingResult;
+  } catch (error) {
+    return error as Error;
+  }
+};
+
+const saveMappings = async (mappingsInput: any[]) => {
   console.log("mappingsInput", mappingsInput);
 
   if (mappingsInput.length > 0) {
     const mappingResults = mappingsInput.map(async (maybeMapping) => {
-      const mappingName = maybeMapping.name;
-      const hubspotInfo = maybeMapping.property;
+      const mappingName = maybeMapping.nativeName;
+      const hubspotName = maybeMapping.property.hubspotName;
+      const hubspotLabel = maybeMapping.property.hubspotLabel;
       const object = maybeMapping.property.object;
       const direction = maybeMapping.direction;
       const customerId = getCustomerId();
 
       const mappingResult = await prisma.mapping.upsert({
         where: {
-          name_object_customerId: {
-            name: mappingName,
+          nativeName_object_customerId: {
+            nativeName: mappingName,
             customerId: customerId,
             object: object,
           },
         },
         update: {
-          hubspotLabel: hubspotInfo.label,
-          hubspotName: hubspotInfo.name,
-          direction: direction,
+          hubspotLabel,
+          hubspotName,
+          direction,
         },
         create: {
-          hubspotLabel: hubspotInfo.label,
-          hubspotName: hubspotInfo.name,
-          name: mappingName,
+          hubspotLabel,
+          hubspotName,
+          nativeName: mappingName,
           object: object,
           customerId: customerId,
           direction: direction,
@@ -64,7 +107,7 @@ const saveMappings = async (mappingsInput: Mapping[]) => {
 
     return await Promise.all(mappingResults);
   }
-  return null;
+  return {};
 };
 
-export { saveMappings, deleteMapping, getMappings };
+export { saveMappings, deleteMapping, getMappings, saveMapping };
