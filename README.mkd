@@ -1,33 +1,47 @@
-# Express with Typescript
+# Property Mappings Server
 
-This repo is linked to this article https://dev.to/codeozz/express-with-typescript-starter-explained-fast-4dn7
+Used a getting started with [Express and Typescript](https://dev.to/codeozz/express-with-typescript-starter-explained-fast-4dn7) to bootsrap the project
 
-It's a very basic repo for people that want to start their own Express server supporting NodeJs
+## What's included
 
-## Install
+- A database using prisma to store auth and mappings
+- An OAuth handler to install apps
+- A basic caching layer to reduce unecesssary requests to HubSpot's API
+
+## Getting Started
+
+```
+npm install
+npm run db-init
+npm run seed
+npm run dev
+```
+
+### Install
 
 ```
 npm install
 ```
 
-## Run
+### Run
 
 ```
 npm run dev
 ```
 
-## Build TS file
+### Build TS file
 
 ```
 npm run build
 ```
 
-## Run for prod
+### Run for prod
 
 ```
 npm run prod
 ```
-## DB Set Up
+
+### DB Set Up
 
 must have database up and running
 

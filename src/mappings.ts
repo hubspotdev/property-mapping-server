@@ -34,7 +34,7 @@ const saveMapping = async (maybeMapping: Mapping): Promise<Mapping | Error> => {
   const mappingName = maybeMapping.nativeName;
   const hubspotName = maybeMapping.hubspotName;
   const hubspotLabel = maybeMapping.hubspotLabel;
-  const object = maybeMapping.object;
+  const object = maybeMapping.object || "Contact";
   const direction = maybeMapping.direction;
   const customerId = getCustomerId();
   try {
@@ -67,15 +67,15 @@ const saveMapping = async (maybeMapping: Mapping): Promise<Mapping | Error> => {
   }
 };
 
-const saveMappings = async (mappingsInput: Mapping[]) => {
+const saveMappings = async (mappingsInput: any[]) => {
   console.log("mappingsInput", mappingsInput);
 
   if (mappingsInput.length > 0) {
     const mappingResults = mappingsInput.map(async (maybeMapping) => {
       const mappingName = maybeMapping.nativeName;
-      const hubspotName = maybeMapping.hubspotName;
-      const hubspotLabel = maybeMapping.hubspotLabel;
-      const object = maybeMapping.object;
+      const hubspotName = maybeMapping.property.hubspotName;
+      const hubspotLabel = maybeMapping.property.hubspotLabel;
+      const object = maybeMapping.property.object;
       const direction = maybeMapping.direction;
       const customerId = getCustomerId();
 
