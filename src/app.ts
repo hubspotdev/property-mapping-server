@@ -76,7 +76,7 @@ app.post("/api/mappings", async (req: Request, res: Response) => {
 app.delete("/api/mappings/:mappingId", async (req: Request, res: Response) => {
   const mappingToDelete = req.params.mappingId;
   const mappingId = parseInt(mappingToDelete);
-  if (!mappingId || mappingId === NaN) {
+  if (!mappingId ) {
     res.status(400).send("Invalid mapping Id format");
   }
 
