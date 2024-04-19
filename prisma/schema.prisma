@@ -34,6 +34,7 @@ model Properties {
   type       PropertyType
   object     Objects
   customerId String       @db.VarChar(255)
+  unique     Boolean?
 
   @@unique([name, object, customerId])
 }

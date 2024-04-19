@@ -4,6 +4,7 @@ declare module "default" {
     label?: string | null;
     type?: string;
     object: Objects;
+    unique?: boolean;
   }
   // interface Mapping {
   //   nativeName: string;

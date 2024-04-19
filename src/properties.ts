@@ -4,7 +4,7 @@ import { hubspotClient, prisma } from "./clients";
 
 const TTL = 5 * 60 * 1000; // 5 Minute TTL in milliseconds
 
-const createPropertyGroup = async (accessToken: string) => {
+export const createPropertyGroupForContacts = async (accessToken: string) => {
   hubspotClient.setAccessToken(accessToken);
   try {
     const propertyGroupCreateResponse =
@@ -18,7 +18,22 @@ const createPropertyGroup = async (accessToken: string) => {
   }
 };
 
-const createRequiredProperty = async (accessToken: string) => {
+export const createPropertyGroupForCompanies = async (accessToken: string) => {
+  hubspotClient.setAccessToken(accessToken);
+  try {
+    const propertyGroupCreateResponse =
+      await hubspotClient.crm.properties.groupsApi.create("company", {
+        name: "integration_properties",
+        label: "Integration Properties",
+        displayOrder: 13,
+      });
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+
+export const createRequiredContactProperty = async (accessToken: string) => {
   hubspotClient.setAccessToken(accessToken);
   try {
     const propertyCreateResponse =
@@ -27,6 +42,40 @@ const createRequiredProperty = async (accessToken: string) => {
         label: "Example Required",
         type: "string",
         description: "This property is required for the integration to work",
+        fieldType: "text",
+        groupName: "integration_properties",
+      });
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+export const createContactIdProperty = async (accessToken: string) => {
+  hubspotClient.setAccessToken(accessToken);
+  try {
+    const propertyCreateResponse =
+      await hubspotClient.crm.properties.coreApi.create("contact", {
+        name: "native_system_contact_identifier",
+        label: "Native System Contact Identifier",
+        type: "string",
+        description: "This can be used in place of email adress ot uniquely identify a contact",
+        fieldType: "text",
+        groupName: "integration_properties",
+      });
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+export const createCompanyIdProperty = async (accessToken: string) => {
+  hubspotClient.setAccessToken(accessToken);
+  try {
+    const propertyCreateResponse =
+      await hubspotClient.crm.properties.coreApi.create("company", {
+        name: "native_system_company_identifier",
+        label: "Native System Company Identifier",
+        type: "string",
+        description: "This can be used in place of email adress ot uniquely identify a contact",
         fieldType: "text",
         groupName: "integration_properties",
       });
@@ -64,7 +113,7 @@ const saveHubSpotPropertiesToCache = async (
   return results;
 };
 
-const getHubSpotProperties = async (customerId: string) => {
+export const getHubSpotProperties = async (customerId: string) => {
   // const propertiesCacheIsValid = await checkPropertiesCache(customerId);
 
   const accessToken: string = await getAccessToken(customerId);
@@ -98,7 +147,7 @@ const getHubSpotProperties = async (customerId: string) => {
   }
 };
 
-const getNativeProperties = async (customerId: string) => {
+export const getNativeProperties = async (customerId: string) => {
   const properties = await prisma.properties.findMany({
     select: {
       name: true,
@@ -114,9 +163,3 @@ const getNativeProperties = async (customerId: string) => {
   return properties;
 };
 
-export {
-  getHubSpotProperties,
-  getNativeProperties,
-  createPropertyGroup,
-  createRequiredProperty,
-};
