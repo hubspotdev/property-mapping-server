@@ -61,6 +61,7 @@ export const createContactIdProperty = async (accessToken: string) => {
         description: "This can be used in place of email adress ot uniquely identify a contact",
         fieldType: "text",
         groupName: "integration_properties",
+        hasUniqueValue:true
       });
   } catch (error) {
     console.error(error);
@@ -78,6 +79,7 @@ export const createCompanyIdProperty = async (accessToken: string) => {
         description: "This can be used in place of email adress ot uniquely identify a contact",
         fieldType: "text",
         groupName: "integration_properties",
+        hasUniqueValue: true
       });
   } catch (error) {
     console.error(error);
