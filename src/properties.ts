@@ -64,7 +64,7 @@ const saveHubSpotPropertiesToCache = async (
   return results;
 };
 
-const getHubSpotProperties = async (customerId: string) => {
+const getHubSpotProperties = async (customerId: string, skipCache: boolean) => {
   // const propertiesCacheIsValid = await checkPropertiesCache(customerId);
 
   const accessToken: string = await getAccessToken(customerId);
@@ -74,7 +74,7 @@ const getHubSpotProperties = async (customerId: string) => {
   // add DB call to check if we've looked in the last 5 minutes
   // https://www.prisma.io/docs/reference/api-reference/prisma-schema-reference#updatedat
   const cacheResults = await checkPropertiesCache(customerId);
-  if (cacheResults.expired) {
+  if (cacheResults.expired || skipCache) {
     try {
       const contactProperties = (
         await hubspotClient.crm.properties.coreApi.getAll("contacts")

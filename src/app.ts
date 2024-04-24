@@ -38,9 +38,17 @@ app.get("/oauth-callback", async (req: Request, res: Response) => {
 
 app.get("/api/hubspot-properties", async (req: Request, res: Response) => {
   const customerId = getCustomerId();
-  const properties = await getHubSpotProperties(customerId);
+  const properties = await getHubSpotProperties(customerId, false);
   res.send(properties);
 });
+
+app.get("/api/hubspot-properties-skip-cache", async (req: Request, res: Response) => {
+  const customerId = getCustomerId();
+  const properties = await getHubSpotProperties(customerId, true);
+  res.send(properties);
+});
+
+
 
 app.get("/api/native-properties/", async (req: Request, res: Response) => {
   const customerId = getCustomerId();
