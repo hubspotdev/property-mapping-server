@@ -157,6 +157,7 @@ export const getNativeProperties = async (customerId: string) => {
       type: true,
       object: true,
       customerId: true,
+      unique:true
     },
     where: {
       customerId,

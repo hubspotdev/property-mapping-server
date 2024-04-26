@@ -54,6 +54,13 @@ app.get("/api/native-properties/", async (req: Request, res: Response) => {
   res.send(properties);
 });
 
+app.post("/api/native-properties/", async (req: Request, res: Response) =>{
+  const {body} = req
+  console.log(body)
+  res.send("ok")
+})
+
+
 app.get(
   "/api/native-properties-with-mappings",
   async (req: Request, res: Response) => {
