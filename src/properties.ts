@@ -1,8 +1,40 @@
-import { Properties } from "@prisma/client";
+import { Objects, Properties, PropertyType } from "@prisma/client";
 import { getAccessToken } from "./auth";
 import { hubspotClient, prisma } from "./clients";
+import {  Request } from "express";
 
 const TTL = 5 * 60 * 1000; // 5 Minute TTL in milliseconds
+
+interface propertyConversionTable {
+  [key: string]:PropertyType
+}
+const propertyTypeConversionTable:propertyConversionTable ={
+  "string": PropertyType.String,
+  "number": PropertyType.Number,
+  "option": PropertyType.Option
+}
+
+interface objectConversionTable {
+  [key: string]: Objects
+}
+
+const objectTypeConversionTable:objectConversionTable = {
+  "contact": Objects.Contact,
+  "company": Objects.Company
+}
+
+export const convertToPropertyForDB = (requestBody:Request["body"]) =>{
+  const newPropertyInfo:Properties = {name:"", label:"", type:"String", object:"Contact", unique:false, customerId:"1"}
+
+  newPropertyInfo.name = requestBody.name
+  newPropertyInfo.label = requestBody.label
+  newPropertyInfo.type = propertyTypeConversionTable[ requestBody.type as keyof propertyConversionTable ]
+  newPropertyInfo.object = objectTypeConversionTable[requestBody.objectType as keyof objectConversionTable]
+  newPropertyInfo.unique = requestBody.enforcesUniquness
+  newPropertyInfo.customerId = requestBody.customerId
+
+  return newPropertyInfo
+}
 
 export const createPropertyGroupForContacts = async (accessToken: string) => {
   hubspotClient.setAccessToken(accessToken);
@@ -165,4 +197,12 @@ export const getNativeProperties = async (customerId: string) => {
   });
   return properties;
 };
+
+export const createNativeProperty = async (customerId: string, data:Properties) =>{
+  console.log('data', data)
+  const createPropertyResponse = await prisma.properties.create({
+    data
+  })
+  return createPropertyResponse
+}
 

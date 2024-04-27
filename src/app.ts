@@ -9,11 +9,13 @@ import {
   createRequiredContactProperty,
   createPropertyGroupForCompanies,
   createContactIdProperty,
-  createCompanyIdProperty
+  createCompanyIdProperty,
+  createNativeProperty,
+  convertToPropertyForDB
 } from "./properties";
 import { saveMapping, getMappings, deleteMapping } from "./mappings";
 import { PORT, getCustomerId } from "./utils";
-import { Mapping, Properties } from "@prisma/client";
+import { Mapping, Objects, Properties, PropertyType } from "@prisma/client";
 
 const app: Application = express();
 app.use(express.json());
@@ -56,8 +58,10 @@ app.get("/api/native-properties/", async (req: Request, res: Response) => {
 
 app.post("/api/native-properties/", async (req: Request, res: Response) =>{
   const {body} = req
-  console.log(body)
-  res.send("ok")
+  const customerId = getCustomerId();
+  const propertyData = convertToPropertyForDB(body)
+  const createPropertyRespone = await createNativeProperty(customerId,propertyData)
+  res.send(createPropertyRespone)
 })
 
 
