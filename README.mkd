@@ -1,6 +1,6 @@
 # Property Mappings Server
 
-Used a getting started with [Express and Typescript](https://dev.to/codeozz/express-with-typescript-starter-explained-fast-4dn7) to bootsrap the project
+Used a getting started with [Express and Typescript](https://dev.to/codeozz/express-with-typescript-starter-explained-fast-4dn7) to bootstrap the project
 
 ## What's included
 
