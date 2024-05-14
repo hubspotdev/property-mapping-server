@@ -19,19 +19,19 @@ interface objectConversionTable {
 }
 
 const objectTypeConversionTable:objectConversionTable = {
-  "contact": Objects.Contact,
-  "company": Objects.Company
+  "contacts": Objects.Contact,
+  "companies": Objects.Company
 }
 
-export const convertToPropertyForDB = (requestBody:Request["body"]) =>{
+export const convertToPropertyForDB = (requestBody:Request["body"],customerId:string) =>{
   const newPropertyInfo:Properties = {name:"", label:"", type:"String", object:"Contact", unique:false, customerId:"1"}
 
-  newPropertyInfo.name = requestBody.name
-  newPropertyInfo.label = requestBody.label
-  newPropertyInfo.type = propertyTypeConversionTable[ requestBody.type as keyof propertyConversionTable ]
+  newPropertyInfo.name = requestBody.propertyName
+  newPropertyInfo.label = requestBody.propertyLabel
+  newPropertyInfo.type = propertyTypeConversionTable[requestBody.propertyType as keyof propertyConversionTable]
   newPropertyInfo.object = objectTypeConversionTable[requestBody.objectType as keyof objectConversionTable]
   newPropertyInfo.unique = requestBody.enforcesUniquness
-  newPropertyInfo.customerId = requestBody.customerId
+  newPropertyInfo.customerId = customerId
 
   return newPropertyInfo
 }

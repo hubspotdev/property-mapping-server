@@ -58,8 +58,10 @@ app.get("/api/native-properties/", async (req: Request, res: Response) => {
 
 app.post("/api/native-properties/", async (req: Request, res: Response) =>{
   const {body} = req
+  console.log('Raw Body', body)
   const customerId = getCustomerId();
-  const propertyData = convertToPropertyForDB(body)
+  const propertyData = convertToPropertyForDB(body,customerId)
+  console.log('Create Properties Request', propertyData)
   const createPropertyRespone = await createNativeProperty(customerId,propertyData)
   res.send(createPropertyRespone)
 })
