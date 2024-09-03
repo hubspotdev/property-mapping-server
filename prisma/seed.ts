@@ -1,6 +1,13 @@
 import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
-
+// interface DataSeed {
+//   name: string;
+//   label: string;
+//   type: string;
+//   object: string;
+//   customerId: string;
+//   modificationMetadata: ModificationMetadata;
+// }
 async function main(): Promise<void> {
   const firstname = await prisma.properties.upsert({
     where: {
@@ -17,6 +24,9 @@ async function main(): Promise<void> {
       type: "String",
       object: "Contact",
       customerId: "1",
+      archivable: true,
+      readOnlyDefinition: false,
+      readOnlyValue: true,
     },
   });
   console.log(firstname);
@@ -36,6 +46,9 @@ async function main(): Promise<void> {
       type: "String",
       object: "Contact",
       customerId: "1",
+      archivable: true,
+      readOnlyDefinition: false,
+      readOnlyValue: false,
     },
   });
   console.log(lastname);
@@ -54,6 +67,9 @@ async function main(): Promise<void> {
       type: "String",
       object: "Contact",
       customerId: "1",
+      archivable: true,
+      readOnlyDefinition: false,
+      readOnlyValue: false,
     },
   });
   console.log(exampleCustom);
@@ -72,6 +88,9 @@ async function main(): Promise<void> {
       type: "String",
       object: "Contact",
       customerId: "1",
+      archivable: false,
+      readOnlyDefinition: true,
+      readOnlyValue: true,
     },
   });
   console.log(exampleRequired);
@@ -90,6 +109,9 @@ async function main(): Promise<void> {
       type: "String",
       object: "Company",
       customerId: "1",
+      archivable: true,
+      readOnlyDefinition: false,
+      readOnlyValue: false,
     },
   });
   console.log(customCompany);
@@ -108,6 +130,9 @@ async function main(): Promise<void> {
       type: "String",
       object: "Company",
       customerId: "1",
+      archivable: true,
+      readOnlyDefinition: false,
+      readOnlyValue: false,
     },
   });
   console.log(companyName);
@@ -126,6 +151,9 @@ async function main(): Promise<void> {
       type: "String",
       object: "Company",
       customerId: "1",
+      archivable: true,
+      readOnlyDefinition: false,
+      readOnlyValue: false,
     },
   });
   console.log(industry);
@@ -144,7 +172,9 @@ async function main(): Promise<void> {
       type: "Number",
       object: "Company",
       customerId: "1",
-    },
+      archivable: true,
+      readOnlyDefinition: false,
+      readOnlyValue: false,    },
   });
   console.log(num_employees);
 }

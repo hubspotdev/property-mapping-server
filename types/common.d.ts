@@ -4,6 +4,10 @@ declare module "default" {
     label?: string | null;
     type?: string;
     object: Objects;
+    archivable: boolean;
+    readOnlyDefinition: boolean;
+    readOnlyValue: boolean;
+    // modificationMetaData: ModificationMetadata;
   }
   // interface Mapping {
   //   nativeName: string;
@@ -17,6 +21,10 @@ declare module "default" {
     object: object;
     customerId: string;
     direction: Direction;
+    archivable: boolean;
+    readOnlyDefinition: boolean;
+    readOnlyValue: boolean;
+    // modificationMetaData: ModificationMetadata;
   }
   interface PropertyWithMapping {
     property: Property;
@@ -64,7 +72,10 @@ declare module "default" {
     archived: boolean;
     hasUniqueValue: boolean;
     hidden: boolean;
-    modificationMetadata: ModificationMetadata;
+    archivable: boolean;
+    readOnlyDefinition: boolean;
+    readOnlyValue: boolean;
+    // modificationMetadata: ModificationMetadata;
     formField: boolean;
   }
 }
