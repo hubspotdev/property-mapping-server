@@ -1,4 +1,4 @@
-declare module "default" {
+declare module 'default' {
   interface Property {
     name: string;
     label?: string | null;
@@ -14,7 +14,7 @@ declare module "default" {
     id: number;
     nativeName?: string;
     hubspotName?: string;
-    object: Object;
+    object: object;
     customerId: string;
     direction: Direction;
   }
@@ -24,14 +24,19 @@ declare module "default" {
   }
 
   enum Objects {
-    Contact = "Contact",
-    Company = "Company",
+    Contact = 'Contact',
+    Company = 'Company',
   }
 
   enum Direction {
-    toHubSpot = "toHubSpot",
-    toNative = "toNative",
-    biDirectional = "biDirectional",
+    toHubSpot = 'toHubSpot',
+    toNative = 'toNative',
+    biDirectional = 'biDirectional',
+  }
+
+  export interface PropertyCache {
+    expired: boolean,
+    propertyData: Prisma.JsonValue | undefined
   }
 
   export interface ModificationMetadata {
@@ -40,6 +45,7 @@ declare module "default" {
     readOnlyValue: boolean;
   }
 
+  //fix unused interface
   export interface HubSpotProperty {
     updatedAt: Date;
     createdAt: Date;

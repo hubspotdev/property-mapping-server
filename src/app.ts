@@ -1,6 +1,5 @@
 import "dotenv/config";
-import express, { Application, Request, Response } from "express";
-
+import express, { Application, Request, Response, RequestHandler } from "express";
 import { authUrl, redeemCode } from "./auth";
 import {
   getHubSpotProperties,
@@ -20,59 +19,68 @@ app.get("/api/install", (req: Request, res: Response) => {
   res.send(authUrl);
 });
 
-app.get("/oauth-callback", async (req: Request, res: Response) => {
+app.get("/oauth-callback", async (req: Request, res: Response):Promise<void> => {
   const code = req.query.code;
 
   if (code) {
     try {
       const authInfo = await redeemCode(code.toString());
       const accessToken = authInfo.accessToken;
-      createPropertyGroup(accessToken);
-      createRequiredProperty(accessToken);
+      await createPropertyGroup(accessToken);
+      await createRequiredProperty(accessToken);
       res.redirect(`http://localhost:${PORT - 1}/`);
     } catch (error: any) {
       res.redirect(`/?errMessage=${error.message}`);
     }
   }
-});
+})
 
-app.get("/api/hubspot-properties", async (req: Request, res: Response) => {
-  const customerId = getCustomerId();
-  const properties = await getHubSpotProperties(customerId, false);
-  res.send(properties);
-});
+app.get("/api/hubspot-properties", async (req: Request, res: Response): Promise<void> => {
+  try {
+    const customerId: string = getCustomerId();
+    const properties = await getHubSpotProperties(customerId, false);
+    res.send(properties);
+  } catch (error) {
+    console.error('An error occurred:', error);
+    res.status(500).send('Internal Server Error');
+  }})
+// app.get("/api/hubspot-properties-skip-cache", async (req: Request, res: Response) => {
+//   const customerId = getCustomerId();
+//   const properties = await getHubSpotProperties(customerId, true);
+//   res.send(properties);
+// });
 
-app.get("/api/hubspot-properties-skip-cache", async (req: Request, res: Response) => {
-  const customerId = getCustomerId();
-  const properties = await getHubSpotProperties(customerId, true);
-  res.send(properties);
-});
 
 
-
-app.get("/api/native-properties/", async (req: Request, res: Response) => {
-  const customerId = getCustomerId();
-  const properties = await getNativeProperties(customerId);
-  res.send(properties);
-});
+// app.get("/api/native-properties/", async (req: Request, res: Response) => {
+//   const customerId = getCustomerId();
+//   const properties = await getNativeProperties(customerId);
+//   res.send(properties);
+// });
 
 app.get(
   "/api/native-properties-with-mappings",
-  async (req: Request, res: Response) => {
-    const customerId = getCustomerId();
-    const properties: Properties[] = await getNativeProperties(customerId);
-    const mappings: Mapping[] = await getMappings(customerId);
-    const propertiesWithMappings = properties.map((property) => {
-      const matchedMapping = mappings.find(
-        (mapping) => mapping.nativeName == property.name
-      );
-      return { property, mapping: matchedMapping };
-    });
-    res.send(propertiesWithMappings);
-  }
-);
+  async (req: Request, res: Response):Promise<void> => {
+    try {
+      const customerId = getCustomerId();
+      const properties: Properties[] | undefined = await getNativeProperties(customerId);
+      const mappings: Mapping[] | undefined = await getMappings(customerId);
+      if(mappings && properties){
+      const propertiesWithMappings = properties.map((property) => {
+        const matchedMapping = mappings.find((mapping) => mapping.nativeName === property.name);
+        return { property, mapping: matchedMapping };
+      });
+      res.send(propertiesWithMappings);
+    } else {
+      throw new Error ('Problem getting properties or mappings, check customer ID or database connection')
+    }
+    } catch (error) {
+      console.error('An error occurred while fetching data:', error);
+      res.status(500).send('Internal Server Error');
+    }
+  })
 
-app.post("/api/mappings", async (req: Request, res: Response) => {
+app.post("/api/mappings", async (req: Request, res: Response): Promise<void> => {
   const response = await saveMapping(req.body as Mapping);
   console.log("mapping save response", response);
   if (response instanceof Error) {
@@ -81,7 +89,7 @@ app.post("/api/mappings", async (req: Request, res: Response) => {
   res.send(response);
 });
 
-app.delete("/api/mappings/:mappingId", async (req: Request, res: Response) => {
+app.delete("/api/mappings/:mappingId", async (req: Request, res: Response): Promise<void> => {
   const mappingToDelete = req.params.mappingId;
   const mappingId = parseInt(mappingToDelete);
   if (!mappingId ) {
@@ -92,18 +100,18 @@ app.delete("/api/mappings/:mappingId", async (req: Request, res: Response) => {
   res.send(deleteMappingResult);
 });
 
-app.get("/api/mappings", async (req: Request, res: Response) => {
-  const mappings = await getMappings(getCustomerId());
-  const formattedMappings = mappings.map((mapping) => {
-    const { nativeName, hubspotLabel, hubspotName, id, object } = mapping;
-    return {
-      id,
-      nativeName,
-      property: { name: hubspotName, label: hubspotLabel, object },
-    };
-  });
-  res.send(formattedMappings);
-});
+// app.get("/api/mappings", async (req: Request, res: Response) => {
+//   const mappings = await getMappings(getCustomerId());
+//   const formattedMappings = mappings.map((mapping) => {
+//     const { nativeName, hubspotLabel, hubspotName, id, object } = mapping;
+//     return {
+//       id,
+//       nativeName,
+//       property: { name: hubspotName, label: hubspotLabel, object },
+//     };
+//   });
+//   res.send(formattedMappings);
+// });
 
 app.listen(PORT, function () {
   console.log(`App is listening on port ${PORT} !`);
