@@ -1,5 +1,5 @@
 import "dotenv/config";
-import express, { Application, Request, Response, RequestHandler } from "express";
+import express, { Application, Request, Response } from "express";
 import { authUrl, redeemCode } from "./auth";
 import {
   getHubSpotProperties,
