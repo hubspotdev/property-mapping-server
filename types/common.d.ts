@@ -1,4 +1,4 @@
-declare module 'default' {
+declare module "default" {
   interface Property {
     name: string;
     label?: string | null;
@@ -24,14 +24,14 @@ declare module 'default' {
   }
 
   enum Objects {
-    Contact = 'Contact',
-    Company = 'Company',
+    Contact = "Contact",
+    Company = "Company",
   }
 
   enum Direction {
-    toHubSpot = 'toHubSpot',
-    toNative = 'toNative',
-    biDirectional = 'biDirectional',
+    toHubSpot = "toHubSpot",
+    toNative = "toNative",
+    biDirectional = "biDirectional",
   }
 
   export interface PropertyCache {
