@@ -1,13 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
-// interface DataSeed {
-//   name: string;
-//   label: string;
-//   type: string;
-//   object: string;
-//   customerId: string;
-//   modificationMetadata: ModificationMetadata;
-// }
+
 async function main(): Promise<void> {
   const firstname = await prisma.properties.upsert({
     where: {
