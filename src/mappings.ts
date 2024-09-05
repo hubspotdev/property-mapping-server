@@ -12,9 +12,7 @@ const getMappings = async (customerId: string): Promise<Mapping[] | undefined> =
       object: true,
       direction: true,
       customerId: true,
-      archivable: true,
-      readOnlyDefinition: true,
-      readOnlyValue: true,
+      modificationMetadata:true,
     },
     where: {
       customerId,
@@ -50,9 +48,7 @@ const saveMapping = async (maybeMapping: Mapping): Promise<Mapping | undefined> 
   const hubspotLabel = maybeMapping.hubspotLabel;
   const object = maybeMapping.object;
   const direction = maybeMapping.direction;
-  const archivable = maybeMapping.archivable;
-  const readOnlyDefinition = maybeMapping.readOnlyDefinition;
-  const readOnlyValue =  maybeMapping.readOnlyValue;
+  const modificationMetadata = maybeMapping.modificationMetadata
   const customerId = getCustomerId();
   try {
     const mappingResult = await prisma.mapping.upsert({
@@ -75,9 +71,7 @@ const saveMapping = async (maybeMapping: Mapping): Promise<Mapping | undefined> 
         object: object,
         customerId: customerId,
         direction: direction,
-        archivable,
-        readOnlyDefinition,
-        readOnlyValue
+        modificationMetadata:modificationMetadata || {},
       },
     });
 

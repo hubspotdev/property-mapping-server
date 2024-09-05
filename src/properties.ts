@@ -115,9 +115,7 @@ const getNativeProperties = async (customerId: string): Promise<Properties[] | u
       type: true,
       object: true,
       customerId: true,
-      archivable:true,
-      readOnlyDefinition:true,
-      readOnlyValue:true,
+      modificationMetadata:true,
     },
     where: {
       customerId,

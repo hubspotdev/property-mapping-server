@@ -4,10 +4,7 @@ declare module "default" {
     label?: string | null;
     type?: string;
     object: Objects;
-    archivable: boolean;
-    readOnlyDefinition: boolean;
-    readOnlyValue: boolean;
-    // modificationMetaData: ModificationMetadata;
+    modificationMetadata: ModificationMetadata;
   }
   // interface Mapping {
   //   nativeName: string;
@@ -21,10 +18,7 @@ declare module "default" {
     object: object;
     customerId: string;
     direction: Direction;
-    archivable: boolean;
-    readOnlyDefinition: boolean;
-    readOnlyValue: boolean;
-    // modificationMetaData: ModificationMetadata;
+    modificationMetadata: ModificationMetadata;
   }
   interface PropertyWithMapping {
     property: Property;
@@ -53,6 +47,7 @@ declare module "default" {
     readOnlyValue: boolean;
   }
 
+
   //fix unused interface
   export interface HubSpotProperty {
     updatedAt: Date;
@@ -72,10 +67,7 @@ declare module "default" {
     archived: boolean;
     hasUniqueValue: boolean;
     hidden: boolean;
-    archivable: boolean;
-    readOnlyDefinition: boolean;
-    readOnlyValue: boolean;
-    // modificationMetadata: ModificationMetadata;
+    modificationMetadata: ModificationMetadata;
     formField: boolean;
   }
 }
