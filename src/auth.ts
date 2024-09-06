@@ -1,6 +1,6 @@
 import "dotenv/config";
 import * as hubspot from "@hubspot/api-client";
-import { Authorization, PrismaClient, Objects } from "@prisma/client";
+import { Authorization, PrismaClient } from "@prisma/client";
 import { PORT, getCustomerId } from "./utils";
 
 interface ExchangeProof {
@@ -11,6 +11,18 @@ interface ExchangeProof {
   code?: string;
   refresh_token?: string;
 }
+
+type HubspotAccountInfo = {
+  portalId: number;
+  // accountType: string;
+  // timeZone: string;
+  // companyCurrency: string;
+  // additionalCurrencies: any[];
+  // utcOffset: string;
+  // utcOffsetMilliseconds: number;
+  // uiDomain: string;
+  // dataHostingLocation: string;
+};
 
 const CLIENT_ID: string = process.env.CLIENT_ID || "CLIENT_ID required";
 const CLIENT_SECRET: string =
@@ -57,14 +69,14 @@ const redeemCode = async (code: string): Promise<Authorization> => {
   });
 };
 
-const getHubSpotId = async (accessToken: string) => {
+const getHubSpotId = async (accessToken: string): Promise<string> => {
   hubspotClient.setAccessToken(accessToken);
   const hubspotAccountInfoResponse = await hubspotClient.apiRequest({
     path: "/account-info/v3/details",
     method: "GET",
   });
 
-  const hubspotAccountInfo = await hubspotAccountInfoResponse.json();
+  const hubspotAccountInfo: HubspotAccountInfo = await hubspotAccountInfoResponse.json();
   const hubSpotportalId = hubspotAccountInfo.portalId;
   return hubSpotportalId.toString();
 };

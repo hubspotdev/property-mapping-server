@@ -14,7 +14,7 @@ declare module "default" {
     id: number;
     nativeName?: string;
     hubspotName?: string;
-    object: Object;
+    object: object;
     customerId: string;
     direction: Direction;
   }
@@ -34,12 +34,18 @@ declare module "default" {
     biDirectional = "biDirectional",
   }
 
+  export interface PropertyCache {
+    expired: boolean,
+    propertyData: Prisma.JsonValue | undefined
+  }
+
   export interface ModificationMetadata {
     archivable: boolean;
     readOnlyDefinition: boolean;
     readOnlyValue: boolean;
   }
 
+  //fix unused interface
   export interface HubSpotProperty {
     updatedAt: Date;
     createdAt: Date;

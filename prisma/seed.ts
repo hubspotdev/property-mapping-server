@@ -1,7 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
-async function main() {
+async function main(): Promise<void> {
   const firstname = await prisma.properties.upsert({
     where: {
       name_object_customerId: {
