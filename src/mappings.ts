@@ -12,6 +12,7 @@ const getMappings = async (customerId: string): Promise<Mapping[] | undefined> =
       object: true,
       direction: true,
       customerId: true,
+      modificationMetadata:true,
     },
     where: {
       customerId,
@@ -47,6 +48,7 @@ const saveMapping = async (maybeMapping: Mapping): Promise<Mapping | undefined> 
   const hubspotLabel = maybeMapping.hubspotLabel;
   const object = maybeMapping.object;
   const direction = maybeMapping.direction;
+  const modificationMetadata = maybeMapping.modificationMetadata
   const customerId = getCustomerId();
   try {
     const mappingResult = await prisma.mapping.upsert({
@@ -69,6 +71,7 @@ const saveMapping = async (maybeMapping: Mapping): Promise<Mapping | undefined> 
         object: object,
         customerId: customerId,
         direction: direction,
+        modificationMetadata:modificationMetadata || {},
       },
     });
 

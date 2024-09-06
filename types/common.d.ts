@@ -4,6 +4,7 @@ declare module "default" {
     label?: string | null;
     type?: string;
     object: Objects;
+    modificationMetadata: ModificationMetadata;
   }
   // interface Mapping {
   //   nativeName: string;
@@ -17,6 +18,7 @@ declare module "default" {
     object: object;
     customerId: string;
     direction: Direction;
+    modificationMetadata: ModificationMetadata;
   }
   interface PropertyWithMapping {
     property: Property;
@@ -44,6 +46,7 @@ declare module "default" {
     readOnlyDefinition: boolean;
     readOnlyValue: boolean;
   }
+
 
   //fix unused interface
   export interface HubSpotProperty {

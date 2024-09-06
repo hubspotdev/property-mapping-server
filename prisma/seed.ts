@@ -17,6 +17,12 @@ async function main(): Promise<void> {
       type: "String",
       object: "Contact",
       customerId: "1",
+      modificationMetadata:{
+      archivable: true,
+      readOnlyDefinition: false,
+      readOnlyValue: false,
+      }
+
     },
   });
   console.log(firstname);
@@ -36,6 +42,11 @@ async function main(): Promise<void> {
       type: "String",
       object: "Contact",
       customerId: "1",
+      modificationMetadata:{
+        archivable: true,
+        readOnlyDefinition: false,
+        readOnlyValue: false,
+        }
     },
   });
   console.log(lastname);
@@ -54,6 +65,11 @@ async function main(): Promise<void> {
       type: "String",
       object: "Contact",
       customerId: "1",
+      modificationMetadata:{
+        archivable: true,
+        readOnlyDefinition: false,
+        readOnlyValue: false,
+        }
     },
   });
   console.log(exampleCustom);
@@ -72,6 +88,11 @@ async function main(): Promise<void> {
       type: "String",
       object: "Contact",
       customerId: "1",
+      modificationMetadata:{
+        archivable: true,
+        readOnlyDefinition: false,
+        readOnlyValue: true,
+        }
     },
   });
   console.log(exampleRequired);
@@ -90,6 +111,11 @@ async function main(): Promise<void> {
       type: "String",
       object: "Company",
       customerId: "1",
+      modificationMetadata:{
+        archivable: true,
+        readOnlyDefinition: false,
+        readOnlyValue: false,
+        }
     },
   });
   console.log(customCompany);
@@ -108,6 +134,11 @@ async function main(): Promise<void> {
       type: "String",
       object: "Company",
       customerId: "1",
+      modificationMetadata:{
+        archivable: true,
+        readOnlyDefinition: false,
+        readOnlyValue: false,
+        }
     },
   });
   console.log(companyName);
@@ -126,6 +157,11 @@ async function main(): Promise<void> {
       type: "String",
       object: "Company",
       customerId: "1",
+      modificationMetadata:{
+        archivable: true,
+        readOnlyDefinition: false,
+        readOnlyValue: false,
+        }
     },
   });
   console.log(industry);
@@ -144,6 +180,11 @@ async function main(): Promise<void> {
       type: "Number",
       object: "Company",
       customerId: "1",
+      modificationMetadata:{
+        archivable: true,
+        readOnlyDefinition: false,
+        readOnlyValue: false,
+        }
     },
   });
   console.log(num_employees);

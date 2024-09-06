@@ -8,13 +8,14 @@ generator client {
 }
 
 model Mapping {
-  id           Int       @id @default(autoincrement())
-  nativeName   String    @db.VarChar(255)
-  hubspotName  String?   @db.VarChar(255)
-  hubspotLabel String?   @db.VarChar(255)
-  object       Objects
-  customerId   String    @db.VarChar(255)
-  direction    Direction
+  id                     Int                  @id @default(autoincrement())
+  nativeName             String               @db.VarChar(255)
+  hubspotName            String?              @db.VarChar(255)
+  hubspotLabel           String?              @db.VarChar(255)
+  object                 Objects
+  customerId             String               @db.VarChar(255)
+  direction              Direction
+  modificationMetadata   Json
 
   @@unique([nativeName, object, customerId])
 }
@@ -29,11 +30,12 @@ model Authorization {
 }
 
 model Properties {
-  name       String       @db.VarChar(255)
-  label      String?      @db.VarChar(255)
-  type       PropertyType
-  object     Objects
-  customerId String       @db.VarChar(255)
+  name                   String               @db.VarChar(255)
+  label                  String?              @db.VarChar(255)
+  type                   PropertyType
+  object                 Objects
+  customerId             String               @db.VarChar(255)
+  modificationMetadata   Json
 
   @@unique([name, object, customerId])
 }

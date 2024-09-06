@@ -115,6 +115,7 @@ const getNativeProperties = async (customerId: string): Promise<Properties[] | u
       type: true,
       object: true,
       customerId: true,
+      modificationMetadata:true,
     },
     where: {
       customerId,
