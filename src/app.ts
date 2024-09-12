@@ -4,8 +4,11 @@ import { authUrl, redeemCode } from "./auth";
 import {
   getHubSpotProperties,
   getNativeProperties,
-  createPropertyGroup,
-  createRequiredProperty,
+  createPropertyGroupForContacts,
+  createRequiredContactProperty,
+  createPropertyGroupForCompanies,
+  createContactIdProperty,
+  createCompanyIdProperty
 } from "./properties";
 import { saveMapping, getMappings, deleteMapping } from "./mappings";
 import { PORT, getCustomerId } from "./utils";
@@ -26,8 +29,13 @@ app.get("/oauth-callback", async (req: Request, res: Response):Promise<void> => 
     try {
       const authInfo = await redeemCode(code.toString());
       const accessToken = authInfo.accessToken;
-      await createPropertyGroup(accessToken);
-      await createRequiredProperty(accessToken);
+
+      createPropertyGroupForContacts(accessToken);
+      createPropertyGroupForCompanies(accessToken)
+      createRequiredContactProperty(accessToken);
+      createContactIdProperty(accessToken)
+      createCompanyIdProperty(accessToken)
+
       res.redirect(`http://localhost:${PORT - 1}/`);
     } catch (error: any) {
       res.redirect(`/?errMessage=${error.message}`);
