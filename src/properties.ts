@@ -1,22 +1,25 @@
-import { Properties } from "@prisma/client";
+import { HubSpotPropertiesCache, Properties } from '@prisma/client';
 import { getAccessToken } from "./auth";
 import { hubspotClient, prisma } from "./clients";
+import { PropertyCache } from 'default';
 
 const TTL = 5 * 60 * 1000; // 5 Minute TTL in milliseconds
 
+
 export const createPropertyGroupForContacts = async (accessToken: string) => {
+
   hubspotClient.setAccessToken(accessToken);
   try {
-    const propertyGroupCreateResponse =
       await hubspotClient.crm.properties.groupsApi.create("contact", {
         name: "integration_properties",
         label: "Integration Properties",
         displayOrder: 13,
       });
   } catch (error) {
-    console.error(error);
+    console.error('Error creating property group',error);
   }
 };
+
 
 export const createPropertyGroupForCompanies = async (accessToken: string) => {
   hubspotClient.setAccessToken(accessToken);
@@ -34,9 +37,9 @@ export const createPropertyGroupForCompanies = async (accessToken: string) => {
 
 
 export const createRequiredContactProperty = async (accessToken: string) => {
+
   hubspotClient.setAccessToken(accessToken);
   try {
-    const propertyCreateResponse =
       await hubspotClient.crm.properties.coreApi.create("contact", {
         name: "example_required",
         label: "Example Required",
@@ -46,7 +49,7 @@ export const createRequiredContactProperty = async (accessToken: string) => {
         groupName: "integration_properties",
       });
   } catch (error) {
-    console.error(error);
+    console.error('Error creating required property',error);
   }
 };
 
@@ -86,23 +89,31 @@ export const createCompanyIdProperty = async (accessToken: string) => {
   }
 };
 
-const checkPropertiesCache = async (customerId: string) => {
+
+const checkPropertiesCache = async (customerId: string): Promise<PropertyCache | undefined> => {
+  try{
+
   const cacheResults = await prisma.hubSpotPropertiesCache.findFirst({
     where: { customerId },
     select: { updatedAt: true, propertyData: true },
   });
+
   const now = new Date();
   const updatedAt = cacheResults?.updatedAt ?? new Date(0);
   return {
     expired: now.getTime() - updatedAt.getTime() > TTL,
     propertyData: cacheResults?.propertyData,
   };
+} catch(error){
+  console.error('Error checking properties cache',error)
+}
 };
 
 const saveHubSpotPropertiesToCache = async (
   customerId: string,
   propertyData: any
-) => {
+): Promise<HubSpotPropertiesCache | undefined> => {
+  try{
   const results = await prisma.hubSpotPropertiesCache.upsert({
     where: { customerId },
     update: { propertyData },
@@ -113,9 +124,14 @@ const saveHubSpotPropertiesToCache = async (
   });
   console.log(results);
   return results;
+} catch(error) {
+  console.error('Error saving HubSpot properties to cache', error)
+}
 };
 
-export const getHubSpotProperties = async (customerId: string) => {
+
+export const getHubSpotProperties = async (customerId: string, skipCache: boolean): Promise<{ contactProperties: any; companyProperties: any; } | undefined>  => {
+
   // const propertiesCacheIsValid = await checkPropertiesCache(customerId);
 
   const accessToken: string = await getAccessToken(customerId);
@@ -125,7 +141,7 @@ export const getHubSpotProperties = async (customerId: string) => {
   // add DB call to check if we've looked in the last 5 minutes
   // https://www.prisma.io/docs/reference/api-reference/prisma-schema-reference#updatedat
   const cacheResults = await checkPropertiesCache(customerId);
-  if (cacheResults.expired) {
+  if (!cacheResults || cacheResults.expired || skipCache) {
     try {
       const contactProperties = (
         await hubspotClient.crm.properties.coreApi.getAll("contacts")
@@ -133,7 +149,7 @@ export const getHubSpotProperties = async (customerId: string) => {
       const companyProperties = (
         await hubspotClient.crm.properties.coreApi.getAll("companies")
       ).results;
-      saveHubSpotPropertiesToCache(customerId, {
+      await saveHubSpotPropertiesToCache(customerId, {
         contactProperties,
         companyProperties,
       });
@@ -142,14 +158,17 @@ export const getHubSpotProperties = async (customerId: string) => {
         companyProperties,
       };
     } catch (error) {
-      console.error(error);
+      console.error('Error getting HubSpot properties',error);
     }
   } else {
     return cacheResults?.propertyData;
   }
 };
 
-export const getNativeProperties = async (customerId: string) => {
+
+export const getNativeProperties = async (customerId: string): Promise<Properties[] | undefined>  => {
+  try{
+
   const properties = await prisma.properties.findMany({
     select: {
       name: true,
@@ -157,11 +176,15 @@ export const getNativeProperties = async (customerId: string) => {
       type: true,
       object: true,
       customerId: true,
+      modificationMetadata:true,
     },
     where: {
       customerId,
     },
   });
   return properties;
+} catch(error){
+  console.error('Error getting native properties',error)
+}
 };
 
