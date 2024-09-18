@@ -2,6 +2,7 @@ import "dotenv/config";
 import * as hubspot from "@hubspot/api-client";
 import { Authorization, PrismaClient } from "@prisma/client";
 import { PORT, getCustomerId } from "./utils";
+import handleError from './utils/error';
 
 interface ExchangeProof {
   grant_type: string;
@@ -45,8 +46,10 @@ const EXCHANGE_CONSTANTS = {
 
 const hubspotClient = new hubspot.Client();
 
-const prisma = new PrismaClient();
-
+//Should be refactored to a single PrismaClient instance
+const prisma = new PrismaClient({
+  log: ['query', 'info', 'warn', 'error'],
+});
 const scopeString = SCOPES.toString().replaceAll(",", " ");
 
 const authUrl = hubspotClient.oauth.getAuthorizationUrl(
@@ -61,7 +64,7 @@ const getExpiresAt = (expiresIn: number): Date => {
   return new Date(now.getTime() + expiresIn * 1000);
 };
 
-const redeemCode = async (code: string): Promise<Authorization> => {
+const redeemCode = async (code: string): Promise<Authorization | void> => {
   return await exchangeForTokens({
     ...EXCHANGE_CONSTANTS,
     code,
@@ -83,7 +86,7 @@ const getHubSpotId = async (accessToken: string): Promise<string> => {
 
 const exchangeForTokens = async (
   exchangeProof: ExchangeProof
-): Promise<Authorization> => {
+): Promise<Authorization | void> => {
   const {
     code,
     redirect_uri,
@@ -130,16 +133,12 @@ const exchangeForTokens = async (
     });
 
     return tokenInfo;
-  } catch (e) {
-    console.error(
-      `       > Error exchanging ${exchangeProof.grant_type} for access token`
-    );
-    console.error(e);
-    throw e;
+  } catch (error) {
+    handleError(error, true)
   }
 };
 
-const getAccessToken = async (customerId: string): Promise<string> => {
+const getAccessToken = async (customerId: string): Promise<string | void> => {
   try {
     const currentCreds = (await prisma.authorization.findFirst({
       select: {
@@ -167,9 +166,8 @@ const getAccessToken = async (customerId: string): Promise<string> => {
       }
     }
   } catch (error) {
-    console.error(error);
-    throw error;
+    handleError(error, true)
   }
 };
 
-export { authUrl, exchangeForTokens, redeemCode, getAccessToken };
+export { authUrl, exchangeForTokens, redeemCode, getAccessToken, prisma };
