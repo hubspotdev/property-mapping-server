@@ -1,6 +1,10 @@
 import { PrismaClient } from "@prisma/client";
-const prisma = new PrismaClient();
+import handleError from '../src/utils/error';
 
+//Should be refactored to a single PrismaClient instance
+const prisma = new PrismaClient({
+  log: ['info', 'warn', 'error'],
+});
 async function main(): Promise<void> {
   const firstname = await prisma.properties.upsert({
     where: {
@@ -192,9 +196,7 @@ async function main(): Promise<void> {
 
 main()
   .catch((e) => {
-    console.error(e);
-    process.exit(1);
+    handleError(e, true)
   })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
+
+  export default prisma
