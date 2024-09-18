@@ -7,9 +7,11 @@ import {
   createPropertyGroup,
   createRequiredProperty,
 } from "./properties";
+import shutdown from './utils/shutdown';
 import { saveMapping, getMappings, deleteMapping } from "./mappings";
 import { PORT, getCustomerId } from "./utils";
 import { Mapping, Properties } from "@prisma/client";
+import handleError from './utils/error'
 
 const app: Application = express();
 app.use(express.json());
@@ -25,11 +27,14 @@ app.get("/oauth-callback", async (req: Request, res: Response):Promise<void> => 
   if (code) {
     try {
       const authInfo = await redeemCode(code.toString());
+      if(authInfo){
       const accessToken = authInfo.accessToken;
       await createPropertyGroup(accessToken);
       await createRequiredProperty(accessToken);
       res.redirect(`http://localhost:${PORT - 1}/`);
+      }
     } catch (error: any) {
+      handleError(error)
       res.redirect(`/?errMessage=${error.message}`);
     }
   }
@@ -41,7 +46,7 @@ app.get("/api/hubspot-properties", async (req: Request, res: Response): Promise<
     const properties = await getHubSpotProperties(customerId, false);
     res.send(properties);
   } catch (error) {
-    console.error('An error occurred:', error);
+    handleError(error)
     res.status(500).send('Internal Server Error');
   }})
 // app.get("/api/hubspot-properties-skip-cache", async (req: Request, res: Response) => {
@@ -71,11 +76,9 @@ app.get(
         return { property, mapping: matchedMapping };
       });
       res.send(propertiesWithMappings);
-    } else {
-      throw new Error ('Problem getting properties or mappings, check customer ID or database connection')
     }
     } catch (error) {
-      console.error('An error occurred while fetching data:', error);
+      handleError(error)
       res.status(500).send('Internal Server Error');
     }
   })
@@ -113,6 +116,13 @@ app.delete("/api/mappings/:mappingId", async (req: Request, res: Response): Prom
 //   res.send(formattedMappings);
 // });
 
-app.listen(PORT, function () {
+const server = app.listen(PORT, function () {
   console.log(`App is listening on port ${PORT} !`);
 });
+
+process.on('SIGTERM', () => {
+  console.info('SIGTERM signal received.');
+  shutdown()
+});
+
+export default server

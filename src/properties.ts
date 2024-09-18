@@ -2,6 +2,7 @@ import { HubSpotPropertiesCache, Properties } from '@prisma/client';
 import { getAccessToken } from "./auth";
 import { hubspotClient, prisma } from "./clients";
 import { PropertyCache } from 'default';
+import handleError from './utils/error';
 
 const TTL = 5 * 60 * 1000; // 5 Minute TTL in milliseconds
 
@@ -14,7 +15,7 @@ const createPropertyGroup = async (accessToken: string):Promise<void> => {
         displayOrder: 13,
       });
   } catch (error) {
-    console.error('Error creating property group',error);
+    handleError(error)
   }
 };
 
@@ -30,7 +31,7 @@ const createRequiredProperty = async (accessToken: string): Promise<void> => {
         groupName: "integration_properties",
       });
   } catch (error) {
-    console.error('Error creating required property',error);
+    handleError(error)
   }
 };
 
@@ -48,7 +49,7 @@ const checkPropertiesCache = async (customerId: string): Promise<PropertyCache |
     propertyData: cacheResults?.propertyData,
   };
 } catch(error){
-  console.error('Error checking properties cache',error)
+  handleError(error)
 }
 };
 
@@ -68,17 +69,17 @@ const saveHubSpotPropertiesToCache = async (
   console.log(results);
   return results;
 } catch(error) {
-  console.error('Error saving HubSpot properties to cache', error)
+  handleError(error)
 }
 };
 
 const getHubSpotProperties = async (customerId: string, skipCache: boolean): Promise<{ contactProperties: any; companyProperties: any; } | undefined>  => {
   // const propertiesCacheIsValid = await checkPropertiesCache(customerId);
 
-  const accessToken: string = await getAccessToken(customerId);
+  const accessToken: string | void = await getAccessToken(customerId);
   console.log(accessToken);
 
-  hubspotClient.setAccessToken(accessToken);
+ if(accessToken) hubspotClient.setAccessToken(accessToken);
   // add DB call to check if we've looked in the last 5 minutes
   // https://www.prisma.io/docs/reference/api-reference/prisma-schema-reference#updatedat
   const cacheResults = await checkPropertiesCache(customerId);
@@ -99,7 +100,7 @@ const getHubSpotProperties = async (customerId: string, skipCache: boolean): Pro
         companyProperties,
       };
     } catch (error) {
-      console.error('Error getting HubSpot properties',error);
+      handleError(error)
     }
   } else {
     return cacheResults?.propertyData;
@@ -123,7 +124,7 @@ const getNativeProperties = async (customerId: string): Promise<Properties[] | u
   });
   return properties;
 } catch(error){
-  console.error('Error getting native properties',error)
+  handleError(error)
 }
 };
 
