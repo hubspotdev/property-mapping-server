@@ -15,7 +15,7 @@ const createPropertyGroup = async (accessToken: string):Promise<void> => {
         displayOrder: 13,
       });
   } catch (error) {
-    handleError(error)
+    handleError(error, 'There was an issue while creating the property group ')
   }
 };
 
@@ -31,7 +31,7 @@ const createRequiredProperty = async (accessToken: string): Promise<void> => {
         groupName: "integration_properties",
       });
   } catch (error) {
-    handleError(error)
+    handleError(error, 'There was an issue while creating a property that is required for this integration to work ')
   }
 };
 
@@ -49,7 +49,7 @@ const checkPropertiesCache = async (customerId: string): Promise<PropertyCache |
     propertyData: cacheResults?.propertyData,
   };
 } catch(error){
-  handleError(error)
+  handleError(error, "There was an issue while attempting to check the properties cache ")
 }
 };
 
@@ -69,7 +69,7 @@ const saveHubSpotPropertiesToCache = async (
   console.log(results);
   return results;
 } catch(error) {
-  handleError(error)
+  handleError(error, 'There was an issue while attempting to save Hubspot properties to the cache ')
 }
 };
 
@@ -100,7 +100,7 @@ const getHubSpotProperties = async (customerId: string, skipCache: boolean): Pro
         companyProperties,
       };
     } catch (error) {
-      handleError(error)
+      handleError(error, 'There was an issue while attempting to get Hubspot properties ')
     }
   } else {
     return cacheResults?.propertyData;
@@ -124,7 +124,7 @@ const getNativeProperties = async (customerId: string): Promise<Properties[] | u
   });
   return properties;
 } catch(error){
-  handleError(error)
+  handleError(error, "There was an issue while attempting to get the native properties ")
 }
 };
 

@@ -196,7 +196,7 @@ async function main(): Promise<void> {
 
 main()
   .catch((e) => {
-    handleError(e, true)
+    handleError(e, 'There was an issue seeding the database ', true)
   })
 
   export default prisma

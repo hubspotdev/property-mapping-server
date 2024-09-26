@@ -65,23 +65,32 @@ const getExpiresAt = (expiresIn: number): Date => {
 };
 
 const redeemCode = async (code: string): Promise<Authorization | void> => {
-  return await exchangeForTokens({
-    ...EXCHANGE_CONSTANTS,
-    code,
-    grant_type: "authorization_code",
-  });
+  try{
+    return await exchangeForTokens({
+      ...EXCHANGE_CONSTANTS,
+      code,
+      grant_type: "authorization_code",
+    });
+  } catch(error){
+    handleError(error, 'There was an issue while exchanging Oauth tokens ')
+  }
 };
 
 const getHubSpotId = async (accessToken: string): Promise<string> => {
-  hubspotClient.setAccessToken(accessToken);
-  const hubspotAccountInfoResponse = await hubspotClient.apiRequest({
-    path: "/account-info/v3/details",
-    method: "GET",
-  });
+  // try {
+    hubspotClient.setAccessToken(accessToken);
+    const hubspotAccountInfoResponse = await hubspotClient.apiRequest({
+      path: "/account-info/v3/details",
+      method: "GET",
+    });
 
-  const hubspotAccountInfo: HubspotAccountInfo = await hubspotAccountInfoResponse.json();
-  const hubSpotportalId = hubspotAccountInfo.portalId;
-  return hubSpotportalId.toString();
+    const hubspotAccountInfo: HubspotAccountInfo = await hubspotAccountInfoResponse.json();
+    const hubSpotportalId = hubspotAccountInfo.portalId;
+    return hubSpotportalId.toString();
+  // } catch(error) {
+  //   // handleError(error)
+  //   return 'Error getting Hubspot ID'
+  // }
 };
 
 const exchangeForTokens = async (
@@ -103,14 +112,18 @@ const exchangeForTokens = async (
     client_secret,
     refresh_token
   );
-
+  const accessToken: string = tokenResponse.accessToken;
+  const refreshToken: string = tokenResponse.refreshToken;
+  const expiresIn: number = tokenResponse.expiresIn;
+  const expiresAt: Date = getExpiresAt(expiresIn);
+  const customerId = getCustomerId();
+  // let hsPortalId;
+  // try{
+  const hsPortalId = await getHubSpotId(accessToken);
+  // } catch (error){
+  //   handleError(error)
+  // }
   try {
-    const accessToken: string = tokenResponse.accessToken;
-    const refreshToken: string = tokenResponse.refreshToken;
-    const expiresIn: number = tokenResponse.expiresIn;
-    const expiresAt: Date = getExpiresAt(expiresIn);
-    const customerId = getCustomerId();
-    const hsPortalId = await getHubSpotId(accessToken);
     const tokenInfo = await prisma.authorization.upsert({
       where: {
         customerId: customerId,
@@ -134,7 +147,7 @@ const exchangeForTokens = async (
 
     return tokenInfo;
   } catch (error) {
-    handleError(error, true)
+    handleError(error, 'There was an issue upserting token info to Prisma ', true)
   }
 };
 
@@ -166,7 +179,7 @@ const getAccessToken = async (customerId: string): Promise<string | void> => {
       }
     }
   } catch (error) {
-    handleError(error, true)
+    handleError(error, 'There was an issue getting or exchanging access tokens ', true)
   }
 };
 

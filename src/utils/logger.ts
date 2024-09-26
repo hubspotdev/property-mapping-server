@@ -2,6 +2,7 @@ type LogLevel = 'Info' | 'Warning' | 'Error';
 
 interface LogMessage {
   message: string;
+  context?:string;
   data?: any;
   stack?: string;
   code?: string;
@@ -32,19 +33,19 @@ class Logger {
   }
 
   private formatLogMessage(level: LogLevel, message: LogMessage, timestamp: string): string {
-    const { type = 'Unknown', code, statusCode, correlationId, details, data, stack } = message;
-    if(!message.message) return  `${type} ${level} occurred at ${timestamp} ${JSON.stringify(message)}`;
+    const { type = 'Unknown', code, context, statusCode, correlationId, details, data, stack } = message;
+    if(!message.message && !message.context) return  `${type} ${level} occurred at ${timestamp} ${JSON.stringify(message)}`;
     const outputLines: string[] = [
-      `${type} ${level} occurred at ${timestamp}`,
-      `Message: ${message.message}`
+      `${type} ${level} at ${timestamp}`,
     ];
-
+    if(context) outputLines.push(`Context: ${context} `)
+    if(message.message && !stack) outputLines.push(`Message: ${message.message}`)
+    if (stack) outputLines.push(`Stack: ${stack}`);
     if (code) outputLines.push(`Code: ${code}`);
     if (statusCode) outputLines.push(`StatusCode: ${statusCode}`);
     if (correlationId) outputLines.push(`Correlation ID: ${correlationId}`);
     if (details && details.length > 0) outputLines.push(`Details: ${JSON.stringify(details, null, 2)}`);
     if (data) outputLines.push(`Data: ${JSON.stringify(data, null, 2)}`);
-    if (stack) outputLines.push(`Stack: ${stack}`);
 
     return outputLines.join('\n');
   }

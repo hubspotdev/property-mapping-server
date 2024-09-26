@@ -34,7 +34,7 @@ app.get("/oauth-callback", async (req: Request, res: Response):Promise<void> => 
       res.redirect(`http://localhost:${PORT - 1}/`);
       }
     } catch (error: any) {
-      handleError(error)
+      handleError(error, 'There was an issue in the Oauth callback ')
       res.redirect(`/?errMessage=${error.message}`);
     }
   }
@@ -46,7 +46,7 @@ app.get("/api/hubspot-properties", async (req: Request, res: Response): Promise<
     const properties = await getHubSpotProperties(customerId, false);
     res.send(properties);
   } catch (error) {
-    handleError(error)
+    handleError(error, 'There was an issue getting Hubspot properties ')
     res.status(500).send('Internal Server Error');
   }})
 // app.get("/api/hubspot-properties-skip-cache", async (req: Request, res: Response) => {
@@ -78,18 +78,19 @@ app.get(
       res.send(propertiesWithMappings);
     }
     } catch (error) {
-      handleError(error)
+      handleError(error, 'There was an issue getting the native properties with mappings ')
       res.status(500).send('Internal Server Error');
     }
   })
 
 app.post("/api/mappings", async (req: Request, res: Response): Promise<void> => {
-  const response = await saveMapping(req.body as Mapping);
-  console.log("mapping save response", response);
-  if (response instanceof Error) {
-    res.status(500).send("Unkown Error");
+  try{
+    const response = await saveMapping(req.body as Mapping);
+    res.send(response);
+  } catch(error) {
+    handleError(error, 'There was an issue while saving property mappings ')
+    res.status(500).send('Error saving mapping')
   }
-  res.send(response);
 });
 
 app.delete("/api/mappings/:mappingId", async (req: Request, res: Response): Promise<void> => {
@@ -98,9 +99,12 @@ app.delete("/api/mappings/:mappingId", async (req: Request, res: Response): Prom
   if (!mappingId ) {
     res.status(400).send("Invalid mapping Id format");
   }
-
-  const deleteMappingResult = await deleteMapping(mappingId);
-  res.send(deleteMappingResult);
+  try {
+    const deleteMappingResult = await deleteMapping(mappingId);
+    res.send(deleteMappingResult);
+  } catch(error) {
+    handleError(error, 'There was an issue while attempting to delete the mapping ')
+  }
 });
 
 // app.get("/api/mappings", async (req: Request, res: Response) => {

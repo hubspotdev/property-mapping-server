@@ -8,7 +8,8 @@ function isGeneralPrismaError(error: any): boolean {
   return error?.stack?.includes('@prisma/client') || error?.message?.includes('prisma');
 }
 
-function handleError(error: any, critical:boolean = false): void {
+function handleError(error: any, context:string = '', critical:boolean = false): void {
+  if(context) error.context = context
   if(critical){
     error.type = 'Critical'
     logger.error(error)

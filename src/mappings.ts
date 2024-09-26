@@ -22,7 +22,7 @@ const getMappings = async (customerId: string): Promise<Mapping[] | undefined> =
   console.log(mappings);
   return mappings;
 } catch (error) {
-  handleError(error)
+  handleError(error, "There was an issue while querying property mappings ")
 }
 };
 
@@ -38,7 +38,7 @@ const deleteMapping = async (mappingId: number): Promise<Mapping | undefined> =>
     return deleteResults;
   }
   catch (error) {
-    handleError(error)
+    handleError(error, 'There was an issue while attempting to delete property mappings ')
   }
 };
 
@@ -78,7 +78,7 @@ const saveMapping = async (maybeMapping: Mapping): Promise<Mapping | undefined> 
 
     return mappingResult;
   } catch (error) {
-    handleError(error)
+    handleError(error, 'There was an issue while attempting to save the property mapping ')
   }
 };
 
