@@ -76,8 +76,8 @@ const redeemCode = async (code: string): Promise<Authorization | void> => {
   }
 };
 
-const getHubSpotId = async (accessToken: string): Promise<string> => {
-  // try {
+const getHubSpotId = async (accessToken: string): Promise<string | void> => {
+  try {
     hubspotClient.setAccessToken(accessToken);
     const hubspotAccountInfoResponse = await hubspotClient.apiRequest({
       path: "/account-info/v3/details",
@@ -87,10 +87,9 @@ const getHubSpotId = async (accessToken: string): Promise<string> => {
     const hubspotAccountInfo: HubspotAccountInfo = await hubspotAccountInfoResponse.json();
     const hubSpotportalId = hubspotAccountInfo.portalId;
     return hubSpotportalId.toString();
-  // } catch(error) {
-  //   // handleError(error)
-  //   return 'Error getting Hubspot ID'
-  // }
+  } catch(error) {
+    handleError(error)
+  }
 };
 
 const exchangeForTokens = async (
@@ -104,50 +103,54 @@ const exchangeForTokens = async (
     grant_type,
     refresh_token,
   } = exchangeProof;
-  const tokenResponse = await hubspotClient.oauth.tokensApi.createToken(
-    grant_type,
-    code,
-    redirect_uri,
-    client_id,
-    client_secret,
-    refresh_token
-  );
-  const accessToken: string = tokenResponse.accessToken;
-  const refreshToken: string = tokenResponse.refreshToken;
-  const expiresIn: number = tokenResponse.expiresIn;
-  const expiresAt: Date = getExpiresAt(expiresIn);
-  const customerId = getCustomerId();
-  // let hsPortalId;
-  // try{
-  const hsPortalId = await getHubSpotId(accessToken);
-  // } catch (error){
-  //   handleError(error)
-  // }
-  try {
-    const tokenInfo = await prisma.authorization.upsert({
-      where: {
-        customerId: customerId,
-      },
-      update: {
-        refreshToken,
-        accessToken,
-        expiresIn,
-        expiresAt,
-        hsPortalId,
-      },
-      create: {
-        refreshToken,
-        accessToken,
-        expiresIn,
-        expiresAt,
-        hsPortalId,
-        customerId,
-      },
-    });
 
-    return tokenInfo;
-  } catch (error) {
-    handleError(error, 'There was an issue upserting token info to Prisma ', true)
+  try{
+    const tokenResponse = await hubspotClient.oauth.tokensApi.createToken(
+      grant_type,
+      code,
+      redirect_uri,
+      client_id,
+      client_secret,
+      refresh_token
+    );
+
+    const {
+      accessToken,
+      refreshToken,
+      expiresIn
+    } = tokenResponse;
+    const expiresAt: Date = getExpiresAt(expiresIn);
+    const customerId = getCustomerId();
+    const hsPortalId = await getHubSpotId(accessToken);
+
+  if(typeof hsPortalId === 'string'){
+      const tokenInfo = await prisma.authorization.upsert({
+        where: {
+          customerId: customerId,
+        },
+        update: {
+          refreshToken,
+          accessToken,
+          expiresIn,
+          expiresAt,
+          hsPortalId,
+        },
+        create: {
+          refreshToken,
+          accessToken,
+          expiresIn,
+          expiresAt,
+          hsPortalId,
+          customerId,
+        },
+      });
+
+      return tokenInfo;
+    } else {
+      handleError({}, 'The Hubspot Portal ID was not a string, there maybe an issue with the Hubspot client or access tokens ' )
+    }
+  } catch(error){
+    handleError(error, 'There was an issue upserting the user\'s auth token info to Prisma ', true)
   }
 };
 
