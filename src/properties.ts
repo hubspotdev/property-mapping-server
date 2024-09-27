@@ -19,7 +19,8 @@ export const createPropertyGroupForContacts = async (accessToken: string) => {
     console.log('Contact property group created!')
   } catch (error:any) {
     if (error instanceof Object){
-      console.log('API error creating contact property group:', error?.body);
+      let errorBody = error.body ?? error
+      console.log('API error creating contact property group:', errorBody);
     } else {
       console.log('Error creating contact property group:', error)
     }
@@ -39,7 +40,8 @@ export const createPropertyGroupForCompanies = async (accessToken: string) => {
     console.log('Company property group created!');
   } catch (error:any) {
     if (error instanceof Object){
-      console.log('API error creating company property group:', error?.body);
+      let errorBody = error.body ?? error
+      console.log('API error creating company property group:', errorBody);
     } else {
       console.log('Error creating company property group:', error)
     }
@@ -63,7 +65,8 @@ export const createRequiredContactProperty = async (accessToken: string) => {
     console.log('Required contact property created!');
   } catch (error:any) {
     if (error instanceof Object){
-      console.log('API error creating required contact property:', error?.body);
+      let errorBody = error.body ?? error
+      console.log('API error creating required contact property:', errorBody);
     } else {
       console.log('Error creating required contact property:', error)
     }
@@ -86,7 +89,8 @@ export const createContactIdProperty = async (accessToken: string) => {
     console.log('Custom contact ID property created!');
   } catch (error:any) {
     if (error instanceof Object){
-      console.log('API error creating custom contact ID property:', error?.body);
+      let errorBody = error.body ?? error
+      console.log('API error creating custom contact ID property:', errorBody);
     } else {
       console.log('Error creating custom contact ID property:', error)
     }
@@ -109,7 +113,8 @@ export const createCompanyIdProperty = async (accessToken: string) => {
     console.log('Custom company ID property created!');
   } catch (error:any) {
     if (error instanceof Object){
-      console.log('API error creating custom company ID property:', error?.body);
+      let errorBody = error.body ?? error
+      console.log('API error creating custom company ID property:', errorBody);
     } else {
       console.log('Error creating custom company ID property:', error)
     }
