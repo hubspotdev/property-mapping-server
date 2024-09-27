@@ -17,8 +17,12 @@ export const createPropertyGroupForContacts = async (accessToken: string) => {
         displayOrder: 13,
       });
     console.log('Contact property group created!')
-  } catch (error) {
-    console.error('Error creating contact property group:',error);
+  } catch (error:any) {
+    if (error instanceof Object){
+      console.log('API error creating contact property group:', error?.body);
+    } else {
+      console.log('Error creating contact property group:', error)
+    }
   }
 };
 
@@ -33,8 +37,12 @@ export const createPropertyGroupForCompanies = async (accessToken: string) => {
         displayOrder: 13,
       });
     console.log('Company property group created!');
-  } catch (error) {
-    console.error('Error creating company property group:',error);
+  } catch (error:any) {
+    if (error instanceof Object){
+      console.log('API error creating company property group:', error?.body);
+    } else {
+      console.log('Error creating company property group:', error)
+    }
   }
 };
 
@@ -53,8 +61,12 @@ export const createRequiredContactProperty = async (accessToken: string) => {
         groupName: "integration_properties",
       });
     console.log('Required contact property created!');
-  } catch (error) {
-    console.error('Error creating required property:',error);
+  } catch (error:any) {
+    if (error instanceof Object){
+      console.log('API error creating required contact property:', error?.body);
+    } else {
+      console.log('Error creating required contact property:', error)
+    }
   }
 };
 
@@ -72,8 +84,12 @@ export const createContactIdProperty = async (accessToken: string) => {
         hasUniqueValue:true
       });
     console.log('Custom contact ID property created!');
-  } catch (error) {
-    console.error('Error creating custom contact ID property:', error);
+  } catch (error:any) {
+    if (error instanceof Object){
+      console.log('API error creating custom contact ID property:', error?.body);
+    } else {
+      console.log('Error creating custom contact ID property:', error)
+    }
   }
 };
 
@@ -91,8 +107,12 @@ export const createCompanyIdProperty = async (accessToken: string) => {
         hasUniqueValue: true
       });
     console.log('Custom company ID property created!');
-  } catch (error) {
-    console.error('Error creating custom company ID property:', error);
+  } catch (error:any) {
+    if (error instanceof Object){
+      console.log('API error creating custom company ID property:', error?.body);
+    } else {
+      console.log('Error creating custom company ID property:', error)
+    }
   }
 };
 

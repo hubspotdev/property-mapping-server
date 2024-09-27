@@ -30,20 +30,21 @@ app.get("/oauth-callback", async (req: Request, res: Response):Promise<void> => 
       const authInfo = await redeemCode(code.toString());
       const accessToken = authInfo.accessToken;
 
+      console.log('OAuth complete! Setting up integration properties...')
       console.log('\nCreating contact property group...');
-      createPropertyGroupForContacts(accessToken);
+      await createPropertyGroupForContacts(accessToken);
 
       console.log('\nCreating company property group...');
-      createPropertyGroupForCompanies(accessToken);
+      await createPropertyGroupForCompanies(accessToken);
 
       console.log('\nCreating required contact property...');
-      createRequiredContactProperty(accessToken);
+      await createRequiredContactProperty(accessToken);
 
       console.log('\nCreating custom contact ID property...');
-      createContactIdProperty(accessToken);
+      await createContactIdProperty(accessToken);
 
       console.log('\nCreating custom company ID property...');
-      createCompanyIdProperty(accessToken);
+      await createCompanyIdProperty(accessToken);
 
       res.redirect(`http://localhost:${PORT - 1}/`);
     } catch (error: any) {
