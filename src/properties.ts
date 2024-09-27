@@ -10,13 +10,15 @@ export const createPropertyGroupForContacts = async (accessToken: string) => {
 
   hubspotClient.setAccessToken(accessToken);
   try {
+    const propertyGroupCreateResponse =
       await hubspotClient.crm.properties.groupsApi.create("contact", {
         name: "integration_properties",
         label: "Integration Properties",
         displayOrder: 13,
       });
+    console.log('Contact property group created!')
   } catch (error) {
-    console.error('Error creating property group',error);
+    console.error('Error creating contact property group:',error);
   }
 };
 
@@ -30,8 +32,9 @@ export const createPropertyGroupForCompanies = async (accessToken: string) => {
         label: "Integration Properties",
         displayOrder: 13,
       });
+    console.log('Company property group created!');
   } catch (error) {
-    console.error(error);
+    console.error('Error creating company property group:',error);
   }
 };
 
@@ -40,6 +43,7 @@ export const createRequiredContactProperty = async (accessToken: string) => {
 
   hubspotClient.setAccessToken(accessToken);
   try {
+    const propertyCreateResponse =
       await hubspotClient.crm.properties.coreApi.create("contact", {
         name: "example_required",
         label: "Example Required",
@@ -48,8 +52,9 @@ export const createRequiredContactProperty = async (accessToken: string) => {
         fieldType: "text",
         groupName: "integration_properties",
       });
+    console.log('Required contact property created!');
   } catch (error) {
-    console.error('Error creating required property',error);
+    console.error('Error creating required property:',error);
   }
 };
 
@@ -66,8 +71,9 @@ export const createContactIdProperty = async (accessToken: string) => {
         groupName: "integration_properties",
         hasUniqueValue:true
       });
+    console.log('Custom contact ID property created!');
   } catch (error) {
-    console.error(error);
+    console.error('Error creating custom contact ID property:', error);
   }
 };
 
@@ -84,8 +90,9 @@ export const createCompanyIdProperty = async (accessToken: string) => {
         groupName: "integration_properties",
         hasUniqueValue: true
       });
+    console.log('Custom company ID property created!');
   } catch (error) {
-    console.error(error);
+    console.error('Error creating custom company ID property:', error);
   }
 };
 

@@ -30,11 +30,20 @@ app.get("/oauth-callback", async (req: Request, res: Response):Promise<void> => 
       const authInfo = await redeemCode(code.toString());
       const accessToken = authInfo.accessToken;
 
+      console.log('\nCreating contact property group...');
       createPropertyGroupForContacts(accessToken);
-      createPropertyGroupForCompanies(accessToken)
+
+      console.log('\nCreating company property group...');
+      createPropertyGroupForCompanies(accessToken);
+
+      console.log('\nCreating required contact property...');
       createRequiredContactProperty(accessToken);
-      createContactIdProperty(accessToken)
-      createCompanyIdProperty(accessToken)
+
+      console.log('\nCreating custom contact ID property...');
+      createContactIdProperty(accessToken);
+
+      console.log('\nCreating custom company ID property...');
+      createCompanyIdProperty(accessToken);
 
       res.redirect(`http://localhost:${PORT - 1}/`);
     } catch (error: any) {
