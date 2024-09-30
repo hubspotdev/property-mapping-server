@@ -1,6 +1,6 @@
 import prisma from "../prisma/seed";
 import handleError from './utils/error';
-import { getCustomerId } from "./utils";
+import { getCustomerId } from "./utils/utils";
 import { Mapping } from "@prisma/client";
 const getMappings = async (customerId: string): Promise<Mapping[] | undefined> => {
  try{

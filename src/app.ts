@@ -9,7 +9,7 @@ import {
 } from "./properties";
 import shutdown from './utils/shutdown';
 import { saveMapping, getMappings, deleteMapping } from "./mappings";
-import { PORT, getCustomerId } from "./utils";
+import { PORT, getCustomerId } from "./utils/utils";
 import { Mapping, Properties } from "@prisma/client";
 import handleError from './utils/error'
 
