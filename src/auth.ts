@@ -3,6 +3,7 @@ import * as hubspot from "@hubspot/api-client";
 import { Authorization, PrismaClient } from "@prisma/client";
 import { PORT, getCustomerId } from "./utils";
 import handleError from './utils/error';
+import prisma from '../prisma/seed'
 
 interface ExchangeProof {
   grant_type: string;
@@ -46,10 +47,6 @@ const EXCHANGE_CONSTANTS = {
 
 const hubspotClient = new hubspot.Client();
 
-//Should be refactored to a single PrismaClient instance
-const prisma = new PrismaClient({
-  log: ['query', 'info', 'warn', 'error'],
-});
 const scopeString = SCOPES.toString().replaceAll(",", " ");
 
 const authUrl = hubspotClient.oauth.getAuthorizationUrl(
@@ -185,4 +182,4 @@ const getAccessToken = async (customerId: string): Promise<string | void> => {
   }
 };
 
-export { authUrl, exchangeForTokens, redeemCode, getAccessToken, prisma };
+export { authUrl, exchangeForTokens, redeemCode, getAccessToken, prisma, hubspotClient };
