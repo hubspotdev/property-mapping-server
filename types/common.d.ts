@@ -60,11 +60,14 @@ declare module "default" {
     error?: Error
 }
 
+type LogLevel = 'Info' | 'Warning' | 'Error';
+
  export interface LogObject {
     logMessage : LogMessage,
     critical? : boolean,
     context : string,
     type? : string
+    level?: LogLevel
 }
 
   //fix unused interface

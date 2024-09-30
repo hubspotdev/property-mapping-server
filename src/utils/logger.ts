@@ -1,13 +1,12 @@
 import { LogObject } from 'default';
 
-type LogLevel = 'Info' | 'Warning' | 'Error';
 
 class Logger {
-  private log(level: LogLevel, message: LogObject): void {
+  private log(message: LogObject): void {
     const timestamp = new Date().toISOString();
-    const logOutput = this.formatLogMessage(level, message, timestamp);
+    const logOutput = this.formatLogMessage(message, timestamp);
 
-    switch (level) {
+    switch (message.level) {
       case 'Error':
         console.error(logOutput);
         break;
@@ -21,8 +20,8 @@ class Logger {
     }
   }
 
-  private formatLogMessage(level: LogLevel, logObject: LogObject, timestamp: string): string {
-    const { type = 'Unknown', context, logMessage } = logObject;
+  private formatLogMessage(logObject: LogObject, timestamp: string): string {
+    const { type = 'Unknown', context, logMessage, level } = logObject;
     const { code, statusCode, correlationId, details, data, stack, message } = logMessage;
 
     const outputLines: string[] = [
@@ -43,15 +42,18 @@ class Logger {
 
 
   public info(message: LogObject): void {
-    this.log('Info', message);
+    message.level = 'Info'
+    this.log(message);
   }
 
   public warn(message: LogObject): void {
-    this.log('Warning', message);
+    message.level = 'Warning'
+    this.log(message);
   }
 
   public error(message: LogObject): void {
-    this.log('Error', message);
+    message.level = 'Error'
+    this.log(message);
   }
 }
 
