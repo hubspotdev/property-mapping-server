@@ -1,20 +1,9 @@
+import { LogObject } from 'default';
+
 type LogLevel = 'Info' | 'Warning' | 'Error';
 
-interface LogMessage {
-  message: string;
-  context?:string;
-  data?: any;
-  stack?: string;
-  code?: string;
-  statusCode?: number;
-  correlationId?: string;
-  details?: any[];
-  type?: string;
-  error?: Error
-}
-
 class Logger {
-  private log(level: LogLevel, message: LogMessage): void {
+  private log(level: LogLevel, message: LogObject): void {
     const timestamp = new Date().toISOString();
     const logOutput = this.formatLogMessage(level, message, timestamp);
 
@@ -32,14 +21,16 @@ class Logger {
     }
   }
 
-  private formatLogMessage(level: LogLevel, message: LogMessage, timestamp: string): string {
-    const { type = 'Unknown', code, context, statusCode, correlationId, details, data, stack } = message;
-    if(!message.message && !message.context) return  `${type} ${level} occurred at ${timestamp} ${JSON.stringify(message)}`;
+  private formatLogMessage(level: LogLevel, logObject: LogObject, timestamp: string): string {
+    const { type = 'Unknown', context, logMessage } = logObject;
+    const { code, statusCode, correlationId, details, data, stack, message } = logMessage;
+
     const outputLines: string[] = [
-      `${type} ${level} at ${timestamp}`,
+      `${type} ${level} at ${timestamp}`
     ];
-    if(context) outputLines.push(`Context: ${context} `)
-    if(message.message && !stack) outputLines.push(`Message: ${message.message}`)
+
+    if (context) outputLines.push(`Context: ${context}`);
+    if (message && !stack) outputLines.push(`Message: ${message}`);
     if (stack) outputLines.push(`Stack: ${stack}`);
     if (code) outputLines.push(`Code: ${code}`);
     if (statusCode) outputLines.push(`StatusCode: ${statusCode}`);
@@ -50,15 +41,16 @@ class Logger {
     return outputLines.join('\n');
   }
 
-  public info(message: LogMessage): void {
+
+  public info(message: LogObject): void {
     this.log('Info', message);
   }
 
-  public warn(message: LogMessage): void {
+  public warn(message: LogObject): void {
     this.log('Warning', message);
   }
 
-  public error(message: LogMessage): void {
+  public error(message: LogObject): void {
     this.log('Error', message);
   }
 }
