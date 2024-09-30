@@ -120,10 +120,12 @@ const exchangeForTokens = async (
       expiresIn
     } = tokenResponse;
     const expiresAt: Date = getExpiresAt(expiresIn);
-    const customerId = getCustomerId();
-    const hsPortalId = await getHubSpotId(accessToken);
+    const customerId: string = getCustomerId();
+    const hsPortalId: string | void = await getHubSpotId(accessToken);
 
-  if(typeof hsPortalId === 'string'){
+  if(typeof hsPortalId !== 'string'){
+    throw new Error('The Hubspot Portal ID was not a string, there maybe an issue with the Hubspot client or access tokens');
+  }
       const tokenInfo = await prisma.authorization.upsert({
         where: {
           customerId: customerId,
@@ -146,9 +148,6 @@ const exchangeForTokens = async (
       });
 
       return tokenInfo;
-    } else {
-      handleError({}, 'The Hubspot Portal ID was not a string, there maybe an issue with the Hubspot client or access tokens ' )
-    }
   } catch(error){
     handleError(error, 'There was an issue upserting the user\'s auth token info to Prisma ', true)
   }
