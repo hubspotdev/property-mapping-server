@@ -65,7 +65,7 @@ type LogLevel = 'Info' | 'Warning' | 'Error';
  export interface LogObject {
     logMessage : LogMessage,
     critical? : boolean,
-    context : string,
+    context? : string,
     type? : string
     level?: LogLevel
 }
