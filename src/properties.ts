@@ -10,13 +10,20 @@ export const createPropertyGroupForContacts = async (accessToken: string) => {
 
   hubspotClient.setAccessToken(accessToken);
   try {
+    const propertyGroupCreateResponse =
       await hubspotClient.crm.properties.groupsApi.create("contact", {
         name: "integration_properties",
         label: "Integration Properties",
         displayOrder: 13,
       });
-  } catch (error) {
-    console.error('Error creating property group',error);
+    console.log('Contact property group created!')
+  } catch (error:any) {
+    if (error instanceof Object){
+      let errorBody = error.body ?? error
+      console.log('API error creating contact property group:', errorBody);
+    } else {
+      console.log('Error creating contact property group:', error)
+    }
   }
 };
 
@@ -30,8 +37,14 @@ export const createPropertyGroupForCompanies = async (accessToken: string) => {
         label: "Integration Properties",
         displayOrder: 13,
       });
-  } catch (error) {
-    console.error(error);
+    console.log('Company property group created!');
+  } catch (error:any) {
+    if (error instanceof Object){
+      let errorBody = error.body ?? error
+      console.log('API error creating company property group:', errorBody);
+    } else {
+      console.log('Error creating company property group:', error)
+    }
   }
 };
 
@@ -40,6 +53,7 @@ export const createRequiredContactProperty = async (accessToken: string) => {
 
   hubspotClient.setAccessToken(accessToken);
   try {
+    const propertyCreateResponse =
       await hubspotClient.crm.properties.coreApi.create("contact", {
         name: "example_required",
         label: "Example Required",
@@ -48,8 +62,14 @@ export const createRequiredContactProperty = async (accessToken: string) => {
         fieldType: "text",
         groupName: "integration_properties",
       });
-  } catch (error) {
-    console.error('Error creating required property',error);
+    console.log('Required contact property created!');
+  } catch (error:any) {
+    if (error instanceof Object){
+      let errorBody = error.body ?? error
+      console.log('API error creating required contact property:', errorBody);
+    } else {
+      console.log('Error creating required contact property:', error)
+    }
   }
 };
 
@@ -66,8 +86,14 @@ export const createContactIdProperty = async (accessToken: string) => {
         groupName: "integration_properties",
         hasUniqueValue:true
       });
-  } catch (error) {
-    console.error(error);
+    console.log('Custom contact ID property created!');
+  } catch (error:any) {
+    if (error instanceof Object){
+      let errorBody = error.body ?? error
+      console.log('API error creating custom contact ID property:', errorBody);
+    } else {
+      console.log('Error creating custom contact ID property:', error)
+    }
   }
 };
 
@@ -84,8 +110,14 @@ export const createCompanyIdProperty = async (accessToken: string) => {
         groupName: "integration_properties",
         hasUniqueValue: true
       });
-  } catch (error) {
-    console.error(error);
+    console.log('Custom company ID property created!');
+  } catch (error:any) {
+    if (error instanceof Object){
+      let errorBody = error.body ?? error
+      console.log('API error creating custom company ID property:', errorBody);
+    } else {
+      console.log('Error creating custom company ID property:', error)
+    }
   }
 };
 
