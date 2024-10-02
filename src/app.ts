@@ -4,10 +4,14 @@ import { authUrl, redeemCode } from "./auth";
 import {
   getHubSpotProperties,
   getNativeProperties,
-  createPropertyGroup,
-  createRequiredProperty,
+  createPropertyGroupForContacts,
+  createRequiredContactProperty,
+  createPropertyGroupForCompanies,
+  createContactIdProperty,
+  createCompanyIdProperty
 } from "./properties";
 import shutdown from './utils/shutdown';
+import {logger} from './utils/logger';
 import { saveMapping, getMappings, deleteMapping } from "./mappings";
 import { PORT, getCustomerId } from "./utils/utils";
 import { Mapping, Properties } from "@prisma/client";
@@ -29,8 +33,29 @@ app.get("/oauth-callback", async (req: Request, res: Response):Promise<void> => 
       const authInfo = await redeemCode(code.toString());
       if(authInfo){
       const accessToken = authInfo.accessToken;
-      await createPropertyGroup(accessToken);
-      await createRequiredProperty(accessToken);
+
+      logger.info({type: 'Prisma', logMessage: {message:'OAuth complete! Setting up integration properties...'}})
+      // console.log('OAuth complete! Setting up integration properties...')
+      logger.info({type: 'Prisma', logMessage: {message:'Creating contact property group...'}})
+      // console.log('\nCreating contact property group...');
+      await createPropertyGroupForContacts(accessToken);
+
+      logger.info({type: 'Prisma', logMessage: {message:'Creating company property group...'}})
+      // console.log('\nCreating company property group...');
+      await createPropertyGroupForCompanies(accessToken);
+
+      logger.info({type: 'Prisma', logMessage: {message:'Creating required contact property...'}})
+      // console.log('\nCreating required contact property...');
+      await createRequiredContactProperty(accessToken);
+
+      logger.info({type: 'Prisma', logMessage: {message:'Creating custom contact ID property...'}})
+      // console.log('\nCreating custom contact ID property...');
+      await createContactIdProperty(accessToken);
+
+      logger.info({type: 'Prisma', logMessage: {message:'Creating custom company ID property...'}})
+      // console.log('\nCreating custom company ID property...');
+      await createCompanyIdProperty(accessToken);
+
       res.redirect(`http://localhost:${PORT - 1}/`);
       }
     } catch (error: any) {
