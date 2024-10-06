@@ -128,7 +128,7 @@ async function main(): Promise<void> {
     where: {
       name_object_customerId: {
         name: "native_system_company_identifier",
-        object: "Contact",
+        object: "Company",
         customerId: "1",
       },
     },
