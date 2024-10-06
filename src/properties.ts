@@ -34,12 +34,7 @@ export const createPropertyGroupForCompanies = async (accessToken: string) => {
       });
     console.log('Company property group created!');
   } catch (error:any) {
-    if (error instanceof Object){
-      let errorBody = error.body ?? error
-      console.log('API error creating company property group:', errorBody);
-    } else {
-      console.log('Error creating company property group:', error)
-    }
+    handleError(error, 'There was an issue while creating the company property group')
   }
 };
 
@@ -77,12 +72,7 @@ export const createContactIdProperty = async (accessToken: string) => {
       });
     console.log('Custom contact ID property created!');
   } catch (error:any) {
-    if (error instanceof Object){
-      let errorBody = error.body ?? error
-      console.log('API error creating custom contact ID property:', errorBody);
-    } else {
-      console.log('Error creating custom contact ID property:', error)
-    }
+    handleError(error, 'There was an issue creating the custom contact ID property')
   }
 };
 
@@ -101,12 +91,7 @@ export const createCompanyIdProperty = async (accessToken: string) => {
       });
     console.log('Custom company ID property created!');
   } catch (error:any) {
-    if (error instanceof Object){
-      let errorBody = error.body ?? error
-      console.log('API error creating custom company ID property:', errorBody);
-    } else {
-      console.log('Error creating custom company ID property:', error)
-    }
+    handleError(error, 'There was an issue creating the custom company ID property')
   }
 };
 
