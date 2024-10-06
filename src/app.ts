@@ -34,26 +34,20 @@ app.get("/oauth-callback", async (req: Request, res: Response):Promise<void> => 
       if(authInfo){
       const accessToken = authInfo.accessToken;
 
-      logger.info({type: 'Prisma', logMessage: {message:'OAuth complete! Setting up integration properties...'}})
-      // console.log('OAuth complete! Setting up integration properties...')
-      logger.info({type: 'Prisma', logMessage: {message:'Creating contact property group...'}})
-      // console.log('\nCreating contact property group...');
+      logger.info({type: 'HubSpot', logMessage: {message:'OAuth complete! Setting up integration properties...'}})
+      logger.info({type: 'HubSpot', logMessage: {message:'Creating contact property group...'}})
       await createPropertyGroupForContacts(accessToken);
 
-      logger.info({type: 'Prisma', logMessage: {message:'Creating company property group...'}})
-      // console.log('\nCreating company property group...');
+      logger.info({type: 'HubSpot', logMessage: {message:'Creating company property group...'}})
       await createPropertyGroupForCompanies(accessToken);
 
-      logger.info({type: 'Prisma', logMessage: {message:'Creating required contact property...'}})
-      // console.log('\nCreating required contact property...');
+      logger.info({type: 'HubSpot', logMessage: {message:'Creating required contact property...'}})
       await createRequiredContactProperty(accessToken);
 
-      logger.info({type: 'Prisma', logMessage: {message:'Creating custom contact ID property...'}})
-      // console.log('\nCreating custom contact ID property...');
+      logger.info({type: 'HubSpot', logMessage: {message:'Creating custom contact ID property...'}})
       await createContactIdProperty(accessToken);
 
-      logger.info({type: 'Prisma', logMessage: {message:'Creating custom company ID property...'}})
-      // console.log('\nCreating custom company ID property...');
+      logger.info({type: 'HubSpot', logMessage: {message:'Creating custom company ID property...'}})
       await createCompanyIdProperty(accessToken);
 
       res.redirect(`http://localhost:${PORT - 1}/`);
