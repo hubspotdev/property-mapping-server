@@ -1,9 +1,41 @@
-import { HubSpotPropertiesCache, Properties } from '@prisma/client';
+import { Objects, Properties, PropertyType,HubSpotPropertiesCache } from "@prisma/client";
 import { getAccessToken } from "./auth";
 import { hubspotClient, prisma } from "./clients";
+import {  Request } from "express";
 import { PropertyCache } from 'default';
 
 const TTL = 5 * 60 * 1000; // 5 Minute TTL in milliseconds
+
+interface propertyConversionTable {
+  [key: string]:PropertyType
+}
+const propertyTypeConversionTable:propertyConversionTable ={
+  "string": PropertyType.String,
+  "number": PropertyType.Number,
+  "option": PropertyType.Option
+}
+
+interface objectConversionTable {
+  [key: string]: Objects
+}
+
+const objectTypeConversionTable:objectConversionTable = {
+  "contacts": Objects.Contact,
+  "companies": Objects.Company
+}
+
+export const convertToPropertyForDB = (requestBody:Request["body"],customerId:string) =>{
+  const newPropertyInfo:Properties = {name:"", label:"", type:"String", object:"Contact", unique:false, customerId:"1"}
+
+  newPropertyInfo.name = requestBody.propertyName
+  newPropertyInfo.label = requestBody.propertyLabel
+  newPropertyInfo.type = propertyTypeConversionTable[requestBody.propertyType as keyof propertyConversionTable]
+  newPropertyInfo.object = objectTypeConversionTable[requestBody.objectType as keyof objectConversionTable]
+  newPropertyInfo.unique = requestBody.enforcesUniquness
+  newPropertyInfo.customerId = customerId
+
+  return newPropertyInfo
+}
 
 
 export const createPropertyGroupForContacts = async (accessToken: string) => {
@@ -208,7 +240,9 @@ export const getNativeProperties = async (customerId: string): Promise<Propertie
       type: true,
       object: true,
       customerId: true,
+      unique:true,
       modificationMetadata:true,
+
     },
     where: {
       customerId,
@@ -219,4 +253,12 @@ export const getNativeProperties = async (customerId: string): Promise<Propertie
   console.error('Error getting native properties',error)
 }
 };
+
+export const createNativeProperty = async (customerId: string, data:Properties) =>{
+  console.log('data', data)
+  const createPropertyResponse = await prisma.properties.create({
+    data
+  })
+  return createPropertyResponse
+}
 
