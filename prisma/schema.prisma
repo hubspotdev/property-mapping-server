@@ -37,7 +37,7 @@ model Properties {
   object     Objects
   customerId String       @db.VarChar(255)
   unique     Boolean?
-modificationMetadata   Json
+  modificationMetadata   Json
 
 
   @@unique([name, object, customerId])

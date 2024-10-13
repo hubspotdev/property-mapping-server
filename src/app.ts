@@ -12,9 +12,14 @@ import {
   createNativeProperty,
   convertToPropertyForDB
 } from "./properties";
+import shutdown from './utils/shutdown';
+import {logger} from './utils/logger';
 import { saveMapping, getMappings, deleteMapping } from "./mappings";
-import { PORT, getCustomerId } from "./utils";
-import { Mapping, Objects, Properties, PropertyType } from "@prisma/client";
+import { PORT, getCustomerId } from "./utils/utils";
+import { Mapping, Properties } from "@prisma/client";
+import handleError from './utils/error'
+
+
 
 const app: Application = express();
 app.use(express.json());
@@ -30,26 +35,29 @@ app.get("/oauth-callback", async (req: Request, res: Response):Promise<void> => 
   if (code) {
     try {
       const authInfo = await redeemCode(code.toString());
+      if(authInfo){
       const accessToken = authInfo.accessToken;
 
-      console.log('OAuth complete! Setting up integration properties...')
-      console.log('\nCreating contact property group...');
+      logger.info({type: 'HubSpot', logMessage: {message:'OAuth complete! Setting up integration properties...'}})
+      logger.info({type: 'HubSpot', logMessage: {message:'Creating contact property group...'}})
       await createPropertyGroupForContacts(accessToken);
 
-      console.log('\nCreating company property group...');
+      logger.info({type: 'HubSpot', logMessage: {message:'Creating company property group...'}})
       await createPropertyGroupForCompanies(accessToken);
 
-      console.log('\nCreating required contact property...');
+      logger.info({type: 'HubSpot', logMessage: {message:'Creating required contact property...'}})
       await createRequiredContactProperty(accessToken);
 
-      console.log('\nCreating custom contact ID property...');
+      logger.info({type: 'HubSpot', logMessage: {message:'Creating custom contact ID property...'}})
       await createContactIdProperty(accessToken);
 
-      console.log('\nCreating custom company ID property...');
+      logger.info({type: 'HubSpot', logMessage: {message:'Creating custom company ID property...'}})
       await createCompanyIdProperty(accessToken);
 
       res.redirect(`http://localhost:${PORT - 1}/`);
+      }
     } catch (error: any) {
+      handleError(error, 'There was an issue in the Oauth callback ')
       res.redirect(`/?errMessage=${error.message}`);
     }
   }
@@ -61,7 +69,7 @@ app.get("/api/hubspot-properties", async (req: Request, res: Response): Promise<
     const properties = await getHubSpotProperties(customerId, false);
     res.send(properties);
   } catch (error) {
-    console.error('An error occurred:', error);
+    handleError(error, 'There was an issue getting Hubspot properties ')
     res.status(500).send('Internal Server Error');
   }})
 // app.get("/api/hubspot-properties-skip-cache", async (req: Request, res: Response) => {
@@ -102,22 +110,21 @@ app.get(
         return { property, mapping: matchedMapping };
       });
       res.send(propertiesWithMappings);
-    } else {
-      throw new Error ('Problem getting properties or mappings, check customer ID or database connection')
     }
     } catch (error) {
-      console.error('An error occurred while fetching data:', error);
+      handleError(error, 'There was an issue getting the native properties with mappings ')
       res.status(500).send('Internal Server Error');
     }
   })
 
 app.post("/api/mappings", async (req: Request, res: Response): Promise<void> => {
-  const response = await saveMapping(req.body as Mapping);
-  console.log("mapping save response", response);
-  if (response instanceof Error) {
-    res.status(500).send("Unkown Error");
+  try{
+    const response = await saveMapping(req.body as Mapping);
+    res.send(response);
+  } catch(error) {
+    handleError(error, 'There was an issue while saving property mappings ')
+    res.status(500).send('Error saving mapping')
   }
-  res.send(response);
 });
 
 app.delete("/api/mappings/:mappingId", async (req: Request, res: Response): Promise<void> => {
@@ -126,9 +133,12 @@ app.delete("/api/mappings/:mappingId", async (req: Request, res: Response): Prom
   if (!mappingId ) {
     res.status(400).send("Invalid mapping Id format");
   }
-
-  const deleteMappingResult = await deleteMapping(mappingId);
-  res.send(deleteMappingResult);
+  try {
+    const deleteMappingResult = await deleteMapping(mappingId);
+    res.send(deleteMappingResult);
+  } catch(error) {
+    handleError(error, 'There was an issue while attempting to delete the mapping ')
+  }
 });
 
 // app.get("/api/mappings", async (req: Request, res: Response) => {
@@ -144,6 +154,13 @@ app.delete("/api/mappings/:mappingId", async (req: Request, res: Response): Prom
 //   res.send(formattedMappings);
 // });
 
-app.listen(PORT, function () {
+const server = app.listen(PORT, function () {
   console.log(`App is listening on port ${PORT} !`);
 });
+
+process.on('SIGTERM', () => {
+  console.info('SIGTERM signal received.');
+  shutdown()
+});
+
+export default server

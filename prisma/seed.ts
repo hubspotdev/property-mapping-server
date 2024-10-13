@@ -1,6 +1,10 @@
 import { PrismaClient } from "@prisma/client";
-const prisma = new PrismaClient();
+import handleError from '../src/utils/error';
 
+//Should be refactored to a single PrismaClient instance
+const prisma = new PrismaClient({
+  log: ['info', 'warn', 'error'],
+});
 async function main(): Promise<void> {
   const firstname = await prisma.properties.upsert({
     where: {
@@ -41,6 +45,11 @@ async function main(): Promise<void> {
       type: "String",
       object: "Contact",
       customerId: "1",
+      modificationMetadata: {
+        archivable: true,
+        readOnlyDefinition: false,
+        readOnlyValue: false,
+      },
       unique:true,
     },
   });
@@ -119,7 +128,7 @@ async function main(): Promise<void> {
     where: {
       name_object_customerId: {
         name: "native_system_company_identifier",
-        object: "Contact",
+        object: "Company",
         customerId: "1",
       },
     },
@@ -130,6 +139,11 @@ async function main(): Promise<void> {
       type: "String",
       object: "Company",
       customerId: "1",
+      modificationMetadata: {
+        archivable: true,
+        readOnlyDefinition: false,
+        readOnlyValue: false,
+      },
       unique:true,
     },
   });
@@ -230,9 +244,7 @@ async function main(): Promise<void> {
 
 main()
   .catch((e) => {
-    console.error(e);
-    process.exit(1);
+    handleError(e, 'There was an issue seeding the database ', true)
   })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
+
+  export default prisma

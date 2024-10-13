@@ -1,5 +1,6 @@
 import { prisma } from "./clients";
-import { getCustomerId } from "./utils";
+import handleError from './utils/error';
+import { getCustomerId } from "./utils/utils";
 import { Mapping } from "@prisma/client";
 const getMappings = async (customerId: string): Promise<Mapping[] | undefined> => {
  try{
@@ -21,7 +22,7 @@ const getMappings = async (customerId: string): Promise<Mapping[] | undefined> =
   console.log(mappings);
   return mappings;
 } catch (error) {
-  console.error("Failed to get mappings", error)
+  handleError(error, "There was an issue while querying property mappings ")
 }
 };
 
@@ -37,7 +38,7 @@ const deleteMapping = async (mappingId: number): Promise<Mapping | undefined> =>
     return deleteResults;
   }
   catch (error) {
-    console.error('Failed to delete mapping',error)
+    handleError(error, 'There was an issue while attempting to delete property mappings ')
   }
 };
 
@@ -77,7 +78,7 @@ const saveMapping = async (maybeMapping: Mapping): Promise<Mapping | undefined> 
 
     return mappingResult;
   } catch (error) {
-    console.error('Failed to save mapping', error)
+    handleError(error, 'There was an issue while attempting to save the property mapping ')
   }
 };
 

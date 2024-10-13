@@ -3,6 +3,7 @@ import { getAccessToken } from "./auth";
 import { hubspotClient, prisma } from "./clients";
 import {  Request } from "express";
 import { PropertyCache } from 'default';
+import handleError from './utils/error';
 
 const TTL = 5 * 60 * 1000; // 5 Minute TTL in milliseconds
 
@@ -48,14 +49,8 @@ export const createPropertyGroupForContacts = async (accessToken: string) => {
         label: "Integration Properties",
         displayOrder: 13,
       });
-    console.log('Contact property group created!')
-  } catch (error:any) {
-    if (error instanceof Object){
-      let errorBody = error.body ?? error
-      console.log('API error creating contact property group:', errorBody);
-    } else {
-      console.log('Error creating contact property group:', error)
-    }
+  } catch (error) {
+    handleError(error, 'There was an issue while creating the property group ')
   }
 };
 
@@ -71,12 +66,7 @@ export const createPropertyGroupForCompanies = async (accessToken: string) => {
       });
     console.log('Company property group created!');
   } catch (error:any) {
-    if (error instanceof Object){
-      let errorBody = error.body ?? error
-      console.log('API error creating company property group:', errorBody);
-    } else {
-      console.log('Error creating company property group:', error)
-    }
+    handleError(error, 'There was an issue while creating the company property group')
   }
 };
 
@@ -94,14 +84,8 @@ export const createRequiredContactProperty = async (accessToken: string) => {
         fieldType: "text",
         groupName: "integration_properties",
       });
-    console.log('Required contact property created!');
-  } catch (error:any) {
-    if (error instanceof Object){
-      let errorBody = error.body ?? error
-      console.log('API error creating required contact property:', errorBody);
-    } else {
-      console.log('Error creating required contact property:', error)
-    }
+  } catch (error) {
+    handleError(error, 'There was an issue while creating a property that is required for this integration to work ')
   }
 };
 
@@ -120,12 +104,7 @@ export const createContactIdProperty = async (accessToken: string) => {
       });
     console.log('Custom contact ID property created!');
   } catch (error:any) {
-    if (error instanceof Object){
-      let errorBody = error.body ?? error
-      console.log('API error creating custom contact ID property:', errorBody);
-    } else {
-      console.log('Error creating custom contact ID property:', error)
-    }
+    handleError(error, 'There was an issue creating the custom contact ID property')
   }
 };
 
@@ -144,12 +123,7 @@ export const createCompanyIdProperty = async (accessToken: string) => {
       });
     console.log('Custom company ID property created!');
   } catch (error:any) {
-    if (error instanceof Object){
-      let errorBody = error.body ?? error
-      console.log('API error creating custom company ID property:', errorBody);
-    } else {
-      console.log('Error creating custom company ID property:', error)
-    }
+    handleError(error, 'There was an issue creating the custom company ID property')
   }
 };
 
@@ -169,7 +143,7 @@ const checkPropertiesCache = async (customerId: string): Promise<PropertyCache |
     propertyData: cacheResults?.propertyData,
   };
 } catch(error){
-  console.error('Error checking properties cache',error)
+  handleError(error, "There was an issue while attempting to check the properties cache ")
 }
 };
 
@@ -189,7 +163,7 @@ const saveHubSpotPropertiesToCache = async (
   console.log(results);
   return results;
 } catch(error) {
-  console.error('Error saving HubSpot properties to cache', error)
+  handleError(error, 'There was an issue while attempting to save Hubspot properties to the cache ')
 }
 };
 
@@ -198,10 +172,10 @@ export const getHubSpotProperties = async (customerId: string, skipCache: boolea
 
   // const propertiesCacheIsValid = await checkPropertiesCache(customerId);
 
-  const accessToken: string = await getAccessToken(customerId);
+  const accessToken: string | void = await getAccessToken(customerId);
   console.log(accessToken);
 
-  hubspotClient.setAccessToken(accessToken);
+ if(accessToken) hubspotClient.setAccessToken(accessToken);
   // add DB call to check if we've looked in the last 5 minutes
   // https://www.prisma.io/docs/reference/api-reference/prisma-schema-reference#updatedat
   const cacheResults = await checkPropertiesCache(customerId);
@@ -222,7 +196,7 @@ export const getHubSpotProperties = async (customerId: string, skipCache: boolea
         companyProperties,
       };
     } catch (error) {
-      console.error('Error getting HubSpot properties',error);
+      handleError(error, 'There was an issue while attempting to get Hubspot properties ')
     }
   } else {
     return cacheResults?.propertyData;
@@ -230,7 +204,7 @@ export const getHubSpotProperties = async (customerId: string, skipCache: boolea
 };
 
 
-export const getNativeProperties = async (customerId: string): Promise<Properties[] | undefined>  => {
+export const getNativeProperties = async (customerId: string): Promise<any[] | undefined>  => {
   try{
 
   const properties = await prisma.properties.findMany({
@@ -250,7 +224,7 @@ export const getNativeProperties = async (customerId: string): Promise<Propertie
   });
   return properties;
 } catch(error){
-  console.error('Error getting native properties',error)
+  handleError(error, "There was an issue while attempting to get the native properties ")
 }
 };
 
