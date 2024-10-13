@@ -1,7 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
-async function main() {
+async function main(): Promise<void> {
   const firstname = await prisma.properties.upsert({
     where: {
       name_object_customerId: {
@@ -17,6 +17,12 @@ async function main() {
       type: "String",
       object: "Contact",
       customerId: "1",
+      modificationMetadata:{
+      archivable: true,
+      readOnlyDefinition: false,
+      readOnlyValue: false,
+      }
+
     },
   });
   console.log(firstname);
@@ -55,6 +61,11 @@ async function main() {
       type: "String",
       object: "Contact",
       customerId: "1",
+      modificationMetadata:{
+        archivable: true,
+        readOnlyDefinition: false,
+        readOnlyValue: false,
+        }
     },
   });
   console.log(lastname);
@@ -73,6 +84,11 @@ async function main() {
       type: "String",
       object: "Contact",
       customerId: "1",
+      modificationMetadata:{
+        archivable: true,
+        readOnlyDefinition: false,
+        readOnlyValue: false,
+        }
     },
   });
   console.log(exampleCustom);
@@ -91,6 +107,11 @@ async function main() {
       type: "String",
       object: "Contact",
       customerId: "1",
+      modificationMetadata:{
+        archivable: true,
+        readOnlyDefinition: false,
+        readOnlyValue: true,
+        }
     },
   });
   console.log(exampleRequired);
@@ -128,6 +149,11 @@ async function main() {
       type: "String",
       object: "Company",
       customerId: "1",
+      modificationMetadata:{
+        archivable: true,
+        readOnlyDefinition: false,
+        readOnlyValue: false,
+        }
     },
   });
   console.log(customCompany);
@@ -146,6 +172,11 @@ async function main() {
       type: "String",
       object: "Company",
       customerId: "1",
+      modificationMetadata:{
+        archivable: true,
+        readOnlyDefinition: false,
+        readOnlyValue: false,
+        }
     },
   });
   console.log(companyName);
@@ -164,6 +195,11 @@ async function main() {
       type: "String",
       object: "Company",
       customerId: "1",
+      modificationMetadata:{
+        archivable: true,
+        readOnlyDefinition: false,
+        readOnlyValue: false,
+        }
     },
   });
   console.log(industry);
@@ -182,6 +218,11 @@ async function main() {
       type: "Number",
       object: "Company",
       customerId: "1",
+      modificationMetadata:{
+        archivable: true,
+        readOnlyDefinition: false,
+        readOnlyValue: false,
+        }
     },
   });
   console.log(num_employees);
