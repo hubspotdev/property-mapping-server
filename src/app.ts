@@ -8,7 +8,9 @@ import {
   createRequiredContactProperty,
   createPropertyGroupForCompanies,
   createContactIdProperty,
-  createCompanyIdProperty
+  createCompanyIdProperty,
+  createNativeProperty,
+  convertToPropertyForDB
 } from "./properties";
 import shutdown from './utils/shutdown';
 import {logger} from './utils/logger';
@@ -16,6 +18,8 @@ import { saveMapping, getMappings, deleteMapping } from "./mappings";
 import { PORT, getCustomerId } from "./utils/utils";
 import { Mapping, Properties } from "@prisma/client";
 import handleError from './utils/error'
+
+
 
 const app: Application = express();
 app.use(express.json());
@@ -81,6 +85,17 @@ app.get("/api/hubspot-properties", async (req: Request, res: Response): Promise<
 //   const properties = await getNativeProperties(customerId);
 //   res.send(properties);
 // });
+
+app.post("/api/native-properties/", async (req: Request, res: Response) =>{
+  const {body} = req
+  console.log('Raw Body', body)
+  const customerId = getCustomerId();
+  const propertyData = convertToPropertyForDB(body,customerId)
+  console.log('Create Properties Request', propertyData)
+  const createPropertyRespone = await createNativeProperty(customerId,propertyData)
+  res.send(createPropertyRespone)
+})
+
 
 app.get(
   "/api/native-properties-with-mappings",
