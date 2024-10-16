@@ -34,6 +34,7 @@ export const convertToPropertyForDB = (requestBody:Request["body"],customerId:st
   newPropertyInfo.object = objectTypeConversionTable[requestBody.objectType as keyof objectConversionTable]
   newPropertyInfo.unique = requestBody.enforcesUniquness
   newPropertyInfo.customerId = customerId
+  newPropertyInfo.modificationMetadata = requestBody.modificationMetadata
 
   return newPropertyInfo
 }
