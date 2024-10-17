@@ -102,7 +102,7 @@ const exchangeForTokens = async (
   } = exchangeProof;
 
   try{
-    const tokenResponse = await hubspotClient.oauth.tokensApi.createToken(
+    const tokenResponse = await hubspotClient.oauth.tokensApi.create(
       grant_type,
       code,
       redirect_uri,

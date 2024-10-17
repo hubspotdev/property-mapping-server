@@ -8,6 +8,7 @@ import {  Request } from "express";
 
 import { PropertyCache } from 'default';
 import handleError from './utils/error';
+import { PropertyCreateFieldTypeEnum, PropertyCreateTypeEnum } from '@hubspot/api-client/lib/codegen/crm/properties';
 
 const TTL = 5 * 60 * 1000; // 5 Minute TTL in milliseconds
 
@@ -84,9 +85,9 @@ export const createRequiredContactProperty = async (accessToken: string) => {
       await hubspotClient.crm.properties.coreApi.create("contact", {
         name: "example_required",
         label: "Example Required",
-        type: "string",
+        type:  PropertyCreateTypeEnum.String,
         description: "This property is required for the integration to work",
-        fieldType: "text",
+        fieldType: PropertyCreateFieldTypeEnum.Text,
         groupName: "integration_properties",
       });
   } catch (error) {
@@ -101,9 +102,9 @@ export const createContactIdProperty = async (accessToken: string) => {
       await hubspotClient.crm.properties.coreApi.create("contact", {
         name: "native_system_contact_identifier",
         label: "Native System Contact Identifier",
-        type: "string",
+        type:  PropertyCreateTypeEnum.String,
         description: "This can be used in place of email adress ot uniquely identify a contact",
-        fieldType: "text",
+        fieldType: PropertyCreateFieldTypeEnum.Text,
         groupName: "integration_properties",
         hasUniqueValue:true
       });
@@ -120,9 +121,9 @@ export const createCompanyIdProperty = async (accessToken: string) => {
       await hubspotClient.crm.properties.coreApi.create("company", {
         name: "native_system_company_identifier",
         label: "Native System Company Identifier",
-        type: "string",
+        type:  PropertyCreateTypeEnum.String,
         description: "This can be used in place of email adress ot uniquely identify a contact",
-        fieldType: "text",
+        fieldType:PropertyCreateFieldTypeEnum.Text,
         groupName: "integration_properties",
         hasUniqueValue: true
       });
