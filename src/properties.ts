@@ -1,52 +1,76 @@
-import { Objects, Properties, PropertyType,HubSpotPropertiesCache, Prisma } from "@prisma/client";
+import {
+  Objects,
+  Properties,
+  PropertyType,
+  HubSpotPropertiesCache,
+  Prisma,
+} from "@prisma/client";
 import { getAccessToken } from "./auth";
 
-import prisma from '../prisma/seed'
-import { hubspotClient } from './auth';
+import prisma from "../prisma/seed";
+import { hubspotClient } from "./auth";
 
-import {  Request } from "express";
+import { Request } from "express";
 
-import { PropertyCache } from 'default';
-import handleError from './utils/error';
-import { PropertyCreateFieldTypeEnum, PropertyCreateTypeEnum } from '@hubspot/api-client/lib/codegen/crm/properties';
+import { PropertyCache } from "default";
+import handleError from "./utils/error";
+import {
+  PropertyCreateFieldTypeEnum,
+  PropertyCreateTypeEnum,
+} from "@hubspot/api-client/lib/codegen/crm/properties";
 
 const TTL = 5 * 60 * 1000; // 5 Minute TTL in milliseconds
 
 interface propertyConversionTable {
-  [key: string]:PropertyType
+  [key: string]: PropertyType;
 }
-const propertyTypeConversionTable:propertyConversionTable ={
-  "string": PropertyType.String,
-  "number": PropertyType.Number,
-  "option": PropertyType.Option
-}
+const propertyTypeConversionTable: propertyConversionTable = {
+  string: PropertyType.String,
+  number: PropertyType.Number,
+  option: PropertyType.Option,
+};
 
 interface objectConversionTable {
-  [key: string]: Objects
+  [key: string]: Objects;
 }
 
-const objectTypeConversionTable:objectConversionTable = {
-  "contacts": Objects.Contact,
-  "companies": Objects.Company
-}
+const objectTypeConversionTable: objectConversionTable = {
+  contacts: Objects.Contact,
+  companies: Objects.Company,
+};
 
-export const convertToPropertyForDB = (requestBody:Request["body"],customerId:string) =>{
-  const newPropertyInfo:Properties = {name:"", label:"", type:"String", object:"Contact", unique:false, customerId:"1", modificationMetadata:{}}
+export const convertToPropertyForDB = (
+  requestBody: Request["body"],
+  customerId: string,
+) => {
+  const newPropertyInfo: Properties = {
+    name: "",
+    label: "",
+    type: "String",
+    object: "Contact",
+    unique: false,
+    customerId: "1",
+    modificationMetadata: {},
+  };
 
-  newPropertyInfo.name = requestBody.propertyName
-  newPropertyInfo.label = requestBody.propertyLabel
-  newPropertyInfo.type = propertyTypeConversionTable[requestBody.propertyType as keyof propertyConversionTable]
-  newPropertyInfo.object = objectTypeConversionTable[requestBody.objectType as keyof objectConversionTable]
-  newPropertyInfo.unique = requestBody.enforcesUniquness
-  newPropertyInfo.customerId = customerId
-  newPropertyInfo.modificationMetadata = requestBody.modificationMetadata
+  newPropertyInfo.name = requestBody.propertyName;
+  newPropertyInfo.label = requestBody.propertyLabel;
+  newPropertyInfo.type =
+    propertyTypeConversionTable[
+      requestBody.propertyType as keyof propertyConversionTable
+    ];
+  newPropertyInfo.object =
+    objectTypeConversionTable[
+      requestBody.objectType as keyof objectConversionTable
+    ];
+  newPropertyInfo.unique = requestBody.enforcesUniquness;
+  newPropertyInfo.customerId = customerId;
+  newPropertyInfo.modificationMetadata = requestBody.modificationMetadata;
 
-  return newPropertyInfo
-}
-
+  return newPropertyInfo;
+};
 
 export const createPropertyGroupForContacts = async (accessToken: string) => {
-
   hubspotClient.setAccessToken(accessToken);
   try {
     const propertyGroupCreateResponse =
@@ -56,10 +80,9 @@ export const createPropertyGroupForContacts = async (accessToken: string) => {
         displayOrder: 13,
       });
   } catch (error) {
-    handleError(error, 'There was an issue while creating the property group ')
+    handleError(error, "There was an issue while creating the property group ");
   }
 };
-
 
 export const createPropertyGroupForCompanies = async (accessToken: string) => {
   hubspotClient.setAccessToken(accessToken);
@@ -70,28 +93,32 @@ export const createPropertyGroupForCompanies = async (accessToken: string) => {
         label: "Integration Properties",
         displayOrder: 13,
       });
-    console.log('Company property group created!');
-  } catch (error:any) {
-    handleError(error, 'There was an issue while creating the company property group')
+    console.log("Company property group created!");
+  } catch (error: unknown) {
+    handleError(
+      error,
+      "There was an issue while creating the company property group",
+    );
   }
 };
 
-
 export const createRequiredContactProperty = async (accessToken: string) => {
-
   hubspotClient.setAccessToken(accessToken);
   try {
     const propertyCreateResponse =
       await hubspotClient.crm.properties.coreApi.create("contact", {
         name: "example_required",
         label: "Example Required",
-        type:  PropertyCreateTypeEnum.String,
+        type: PropertyCreateTypeEnum.String,
         description: "This property is required for the integration to work",
         fieldType: PropertyCreateFieldTypeEnum.Text,
         groupName: "integration_properties",
       });
   } catch (error) {
-    handleError(error, 'There was an issue while creating a property that is required for this integration ')
+    handleError(
+      error,
+      "There was an issue while creating a property that is required for this integration ",
+    );
   }
 };
 
@@ -102,15 +129,19 @@ export const createContactIdProperty = async (accessToken: string) => {
       await hubspotClient.crm.properties.coreApi.create("contact", {
         name: "native_system_contact_identifier",
         label: "Native System Contact Identifier",
-        type:  PropertyCreateTypeEnum.String,
-        description: "This can be used in place of email adress ot uniquely identify a contact",
+        type: PropertyCreateTypeEnum.String,
+        description:
+          "This can be used in place of email adress ot uniquely identify a contact",
         fieldType: PropertyCreateFieldTypeEnum.Text,
         groupName: "integration_properties",
-        hasUniqueValue:true
+        hasUniqueValue: true,
       });
-    console.log('Custom contact ID property created!');
-  } catch (error:any) {
-    handleError(error, 'There was an issue creating the custom contact ID property')
+    console.log("Custom contact ID property created!");
+  } catch (error: unknown) {
+    handleError(
+      error,
+      "There was an issue creating the custom contact ID property",
+    );
   }
 };
 
@@ -121,67 +152,78 @@ export const createCompanyIdProperty = async (accessToken: string) => {
       await hubspotClient.crm.properties.coreApi.create("company", {
         name: "native_system_company_identifier",
         label: "Native System Company Identifier",
-        type:  PropertyCreateTypeEnum.String,
-        description: "This can be used in place of email adress ot uniquely identify a contact",
-        fieldType:PropertyCreateFieldTypeEnum.Text,
+        type: PropertyCreateTypeEnum.String,
+        description:
+          "This can be used in place of email adress ot uniquely identify a contact",
+        fieldType: PropertyCreateFieldTypeEnum.Text,
         groupName: "integration_properties",
-        hasUniqueValue: true
+        hasUniqueValue: true,
       });
-    console.log('Custom company ID property created!');
-  } catch (error:any) {
-    handleError(error, 'There was an issue creating the custom company ID property')
+    console.log("Custom company ID property created!");
+  } catch (error: unknown) {
+    handleError(
+      error,
+      "There was an issue creating the custom company ID property",
+    );
   }
 };
 
+const checkPropertiesCache = async (
+  customerId: string,
+): Promise<PropertyCache | undefined> => {
+  try {
+    const cacheResults = await prisma.hubSpotPropertiesCache.findFirst({
+      where: { customerId },
+      select: { updatedAt: true, propertyData: true },
+    });
 
-const checkPropertiesCache = async (customerId: string): Promise<PropertyCache | undefined> => {
-  try{
-
-  const cacheResults = await prisma.hubSpotPropertiesCache.findFirst({
-    where: { customerId },
-    select: { updatedAt: true, propertyData: true },
-  });
-
-  const now = new Date();
-  const updatedAt = cacheResults?.updatedAt ?? new Date(0);
-  return {
-    expired: now.getTime() - updatedAt.getTime() > TTL,
-    propertyData: cacheResults?.propertyData,
-  };
-} catch(error){
-  handleError(error, "There was an issue while attempting to check the properties cache ")
-}
+    const now = new Date();
+    const updatedAt = cacheResults?.updatedAt ?? new Date(0);
+    return {
+      expired: now.getTime() - updatedAt.getTime() > TTL,
+      propertyData: cacheResults?.propertyData,
+    };
+  } catch (error) {
+    handleError(
+      error,
+      "There was an issue while attempting to check the properties cache ",
+    );
+  }
 };
 
 const saveHubSpotPropertiesToCache = async (
   customerId: string,
-  propertyData: any
+  propertyData: any,
 ): Promise<HubSpotPropertiesCache | undefined> => {
-  try{
-  const results = await prisma.hubSpotPropertiesCache.upsert({
-    where: { customerId },
-    update: { propertyData },
-    create: {
-      customerId,
-      propertyData,
-    },
-  });
-  console.log(results);
-  return results;
-} catch(error) {
-  handleError(error, 'There was an issue while attempting to save Hubspot properties to the cache ')
-}
+  try {
+    const results = await prisma.hubSpotPropertiesCache.upsert({
+      where: { customerId },
+      update: { propertyData },
+      create: {
+        customerId,
+        propertyData,
+      },
+    });
+    console.log(results);
+    return results;
+  } catch (error) {
+    handleError(
+      error,
+      "There was an issue while attempting to save Hubspot properties to the cache ",
+    );
+  }
 };
 
-
-export const getHubSpotProperties = async (customerId: string, skipCache: boolean): Promise<{ contactProperties: any; companyProperties: any; } | undefined>  => {
-
+export const getHubSpotProperties = async (
+  customerId: string,
+  skipCache: boolean,
+): Promise<{ contactProperties: any; companyProperties: any } | undefined> => {
   // const propertiesCacheIsValid = await checkPropertiesCache(customerId);
 
   const accessToken: string | void = await getAccessToken(customerId);
   console.log(accessToken);
 
- if(accessToken) hubspotClient.setAccessToken(accessToken);
+  if (accessToken) hubspotClient.setAccessToken(accessToken);
   // add DB call to check if we've looked in the last 5 minutes
   // https://www.prisma.io/docs/reference/api-reference/prisma-schema-reference#updatedat
   const cacheResults = await checkPropertiesCache(customerId);
@@ -202,46 +244,56 @@ export const getHubSpotProperties = async (customerId: string, skipCache: boolea
         companyProperties,
       };
     } catch (error) {
-      handleError(error, 'There was an issue while attempting to get Hubspot properties ')
+      handleError(
+        error,
+        "There was an issue while attempting to get Hubspot properties ",
+      );
     }
   } else {
     return cacheResults?.propertyData;
   }
 };
 
-
-export const getNativeProperties = async (customerId: string): Promise<any[] | undefined>  => {
-  try{
-
-  const properties = await prisma.properties.findMany({
-    select: {
-      name: true,
-      label: true,
-      type: true,
-      object: true,
-      customerId: true,
-      unique:true,
-      modificationMetadata:true,
-
-    },
-    where: {
-      customerId,
-    },
-  });
-  return properties;
-} catch(error){
-  handleError(error, "There was an issue while attempting to get the native properties ")
-}
+export const getNativeProperties = async (
+  customerId: string,
+): Promise<any[] | undefined> => {
+  try {
+    const properties = await prisma.properties.findMany({
+      select: {
+        name: true,
+        label: true,
+        type: true,
+        object: true,
+        customerId: true,
+        unique: true,
+        modificationMetadata: true,
+      },
+      where: {
+        customerId,
+      },
+    });
+    return properties;
+  } catch (error) {
+    handleError(
+      error,
+      "There was an issue while attempting to get the native properties ",
+    );
+  }
 };
 
-export const createNativeProperty = async (customerId: string, data: Properties) =>{
-  console.log('data', data)
+export const createNativeProperty = async (
+  customerId: string,
+  data: Properties,
+) => {
+  console.log("data", data);
   const createPropertyResponse = await prisma.properties.create({
     data: {
       ...data,
-      modificationMetadata: data.modificationMetadata !== null ? data.modificationMetadata : Prisma.JsonNull
+      modificationMetadata:
+        data.modificationMetadata !== null
+          ? data.modificationMetadata
+          : Prisma.JsonNull,
     },
-  })
-  return createPropertyResponse
-}
-
+  });
+  return createPropertyResponse;
+};
