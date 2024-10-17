@@ -1,4 +1,4 @@
-import { Objects, Properties, PropertyType,HubSpotPropertiesCache } from "@prisma/client";
+import { Objects, Properties, PropertyType,HubSpotPropertiesCache, Prisma } from "@prisma/client";
 import { getAccessToken } from "./auth";
 
 import prisma from '../prisma/seed'
@@ -30,7 +30,7 @@ const objectTypeConversionTable:objectConversionTable = {
 }
 
 export const convertToPropertyForDB = (requestBody:Request["body"],customerId:string) =>{
-  const newPropertyInfo:Properties = {name:"", label:"", type:"String", object:"Contact", unique:false, customerId:"1"}
+  const newPropertyInfo:Properties = {name:"", label:"", type:"String", object:"Contact", unique:false, customerId:"1", modificationMetadata:{}}
 
   newPropertyInfo.name = requestBody.propertyName
   newPropertyInfo.label = requestBody.propertyLabel
@@ -38,6 +38,7 @@ export const convertToPropertyForDB = (requestBody:Request["body"],customerId:st
   newPropertyInfo.object = objectTypeConversionTable[requestBody.objectType as keyof objectConversionTable]
   newPropertyInfo.unique = requestBody.enforcesUniquness
   newPropertyInfo.customerId = customerId
+  newPropertyInfo.modificationMetadata = requestBody.modificationMetadata
 
   return newPropertyInfo
 }
@@ -232,10 +233,13 @@ export const getNativeProperties = async (customerId: string): Promise<any[] | u
 }
 };
 
-export const createNativeProperty = async (customerId: string, data:Properties) =>{
+export const createNativeProperty = async (customerId: string, data: Properties) =>{
   console.log('data', data)
   const createPropertyResponse = await prisma.properties.create({
-    data
+    data: {
+      ...data,
+      modificationMetadata: data.modificationMetadata !== null ? data.modificationMetadata : Prisma.JsonNull
+    },
   })
   return createPropertyResponse
 }
