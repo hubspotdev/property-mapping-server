@@ -4,7 +4,9 @@ declare module "default" {
     label?: string | null;
     type?: string;
     object: Objects;
+    unique?: boolean;
     modificationMetadata: ModificationMetadata;
+
   }
   // interface Mapping {
   //   nativeName: string;
@@ -65,7 +67,7 @@ type LogLevel = 'Info' | 'Warning' | 'Error';
  export interface LogObject {
     logMessage : LogMessage,
     critical? : boolean,
-    context : string,
+    context? : string,
     type? : string
     level?: LogLevel
 }

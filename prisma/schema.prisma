@@ -30,12 +30,15 @@ model Authorization {
 }
 
 model Properties {
-  name                   String               @db.VarChar(255)
-  label                  String?              @db.VarChar(255)
-  type                   PropertyType
-  object                 Objects
-  customerId             String               @db.VarChar(255)
+
+  name       String       @db.VarChar(255)
+  label      String?      @db.VarChar(255)
+  type       PropertyType
+  object     Objects
+  customerId String       @db.VarChar(255)
+  unique     Boolean?
   modificationMetadata   Json
+
 
   @@unique([name, object, customerId])
 }

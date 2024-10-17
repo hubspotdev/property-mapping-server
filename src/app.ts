@@ -4,14 +4,22 @@ import { authUrl, redeemCode } from "./auth";
 import {
   getHubSpotProperties,
   getNativeProperties,
-  createPropertyGroup,
-  createRequiredProperty,
+  createPropertyGroupForContacts,
+  createRequiredContactProperty,
+  createPropertyGroupForCompanies,
+  createContactIdProperty,
+  createCompanyIdProperty,
+  createNativeProperty,
+  convertToPropertyForDB
 } from "./properties";
 import shutdown from './utils/shutdown';
+import {logger} from './utils/logger';
 import { saveMapping, getMappings, deleteMapping } from "./mappings";
 import { PORT, getCustomerId } from "./utils/utils";
 import { Mapping, Properties } from "@prisma/client";
 import handleError from './utils/error'
+
+
 
 const app: Application = express();
 app.use(express.json());
@@ -29,8 +37,23 @@ app.get("/oauth-callback", async (req: Request, res: Response):Promise<void> => 
       const authInfo = await redeemCode(code.toString());
       if(authInfo){
       const accessToken = authInfo.accessToken;
-      await createPropertyGroup(accessToken);
-      await createRequiredProperty(accessToken);
+
+      logger.info({type: 'HubSpot', logMessage: {message:'OAuth complete! Setting up integration properties...'}})
+      logger.info({type: 'HubSpot', logMessage: {message:'Creating contact property group...'}})
+      await createPropertyGroupForContacts(accessToken);
+
+      logger.info({type: 'HubSpot', logMessage: {message:'Creating company property group...'}})
+      await createPropertyGroupForCompanies(accessToken);
+
+      logger.info({type: 'HubSpot', logMessage: {message:'Creating required contact property...'}})
+      await createRequiredContactProperty(accessToken);
+
+      logger.info({type: 'HubSpot', logMessage: {message:'Creating custom contact ID property...'}})
+      await createContactIdProperty(accessToken);
+
+      logger.info({type: 'HubSpot', logMessage: {message:'Creating custom company ID property...'}})
+      await createCompanyIdProperty(accessToken);
+
       res.redirect(`http://localhost:${PORT - 1}/`);
       }
     } catch (error: any) {
@@ -62,6 +85,17 @@ app.get("/api/hubspot-properties", async (req: Request, res: Response): Promise<
 //   const properties = await getNativeProperties(customerId);
 //   res.send(properties);
 // });
+
+app.post("/api/native-properties/", async (req: Request, res: Response) =>{
+  const {body} = req
+  console.log('Raw Body', body)
+  const customerId = getCustomerId();
+  const propertyData = convertToPropertyForDB(body,customerId)
+  console.log('Create Properties Request', propertyData)
+  const createPropertyRespone = await createNativeProperty(customerId,propertyData)
+  res.send(createPropertyRespone)
+})
+
 
 app.get(
   "/api/native-properties-with-mappings",
