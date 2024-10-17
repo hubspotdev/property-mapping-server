@@ -1,4 +1,4 @@
-import { prisma } from "./clients";
+import prisma from "../prisma/seed";
 import handleError from './utils/error';
 import { getCustomerId } from "./utils/utils";
 import { Mapping } from "@prisma/client";
