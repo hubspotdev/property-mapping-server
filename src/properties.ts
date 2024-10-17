@@ -1,7 +1,11 @@
 import { Objects, Properties, PropertyType,HubSpotPropertiesCache } from "@prisma/client";
 import { getAccessToken } from "./auth";
-import { hubspotClient, prisma } from "./clients";
+
+import prisma from '../prisma/seed'
+import { hubspotClient } from './auth';
+
 import {  Request } from "express";
+
 import { PropertyCache } from 'default';
 import handleError from './utils/error';
 
@@ -85,7 +89,7 @@ export const createRequiredContactProperty = async (accessToken: string) => {
         groupName: "integration_properties",
       });
   } catch (error) {
-    handleError(error, 'There was an issue while creating a property that is required for this integration to work ')
+    handleError(error, 'There was an issue while creating a property that is required for this integration ')
   }
 };
 
