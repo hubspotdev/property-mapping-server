@@ -18,6 +18,7 @@ import {
   PropertyCreateFieldTypeEnum,
   PropertyCreateTypeEnum,
 } from "@hubspot/api-client/lib/codegen/crm/properties";
+import { logger } from "./utils/logger";
 
 const TTL = 5 * 60 * 1000; // 5 Minute TTL in milliseconds
 
@@ -71,6 +72,10 @@ export const convertToPropertyForDB = (
 };
 
 export const createPropertyGroupForContacts = async (accessToken: string) => {
+  logger.info({
+    type: "HubSpot",
+    logMessage: { message: "Creating contact property group..." },
+  });
   hubspotClient.setAccessToken(accessToken);
   try {
     const propertyGroupCreateResponse =
@@ -79,12 +84,20 @@ export const createPropertyGroupForContacts = async (accessToken: string) => {
         label: "Integration Properties",
         displayOrder: 13,
       });
+    logger.info({
+      type: "HubSpot",
+      logMessage: { message: "Contact property group created!" },
+    });
   } catch (error) {
     handleError(error, "There was an issue while creating the property group ");
   }
 };
 
 export const createPropertyGroupForCompanies = async (accessToken: string) => {
+  logger.info({
+    type: "HubSpot",
+    logMessage: { message: "Creating company property group..." },
+  });
   hubspotClient.setAccessToken(accessToken);
   try {
     const propertyGroupCreateResponse =
@@ -93,7 +106,10 @@ export const createPropertyGroupForCompanies = async (accessToken: string) => {
         label: "Integration Properties",
         displayOrder: 13,
       });
-    console.log("Company property group created!");
+    logger.info({
+      type: "HubSpot",
+      logMessage: { message: "Company property group created!" },
+    });
   } catch (error: unknown) {
     handleError(
       error,
@@ -103,6 +119,10 @@ export const createPropertyGroupForCompanies = async (accessToken: string) => {
 };
 
 export const createRequiredContactProperty = async (accessToken: string) => {
+  logger.info({
+    type: "HubSpot",
+    logMessage: { message: "Creating required contact property..." },
+  });
   hubspotClient.setAccessToken(accessToken);
   try {
     const propertyCreateResponse =
@@ -114,6 +134,10 @@ export const createRequiredContactProperty = async (accessToken: string) => {
         fieldType: PropertyCreateFieldTypeEnum.Text,
         groupName: "integration_properties",
       });
+    logger.info({
+      type: "HubSpot",
+      logMessage: { message: "Required contact property created!" },
+    });
   } catch (error) {
     handleError(
       error,
@@ -123,6 +147,10 @@ export const createRequiredContactProperty = async (accessToken: string) => {
 };
 
 export const createContactIdProperty = async (accessToken: string) => {
+  logger.info({
+    type: "HubSpot",
+    logMessage: { message: "Creating custom contact ID property..." },
+  });
   hubspotClient.setAccessToken(accessToken);
   try {
     const propertyCreateResponse =
@@ -136,7 +164,10 @@ export const createContactIdProperty = async (accessToken: string) => {
         groupName: "integration_properties",
         hasUniqueValue: true,
       });
-    console.log("Custom contact ID property created!");
+    logger.info({
+      type: "HubSpot",
+      logMessage: { message: "Custom contact ID property created!" },
+    });
   } catch (error: unknown) {
     handleError(
       error,
@@ -146,6 +177,10 @@ export const createContactIdProperty = async (accessToken: string) => {
 };
 
 export const createCompanyIdProperty = async (accessToken: string) => {
+  logger.info({
+    type: "HubSpot",
+    logMessage: { message: "Creating custom company ID property..." },
+  });
   hubspotClient.setAccessToken(accessToken);
   try {
     const propertyCreateResponse =
@@ -159,7 +194,10 @@ export const createCompanyIdProperty = async (accessToken: string) => {
         groupName: "integration_properties",
         hasUniqueValue: true,
       });
-    console.log("Custom company ID property created!");
+    logger.info({
+      type: "HubSpot",
+      logMessage: { message: "Custom company ID property created!" },
+    });
   } catch (error: unknown) {
     handleError(
       error,
@@ -296,4 +334,80 @@ export const createNativeProperty = async (
     },
   });
   return createPropertyResponse;
+};
+
+export const checkForPropertyGroup = async (
+  accessToken: string,
+  objectType: string,
+  groupName: string
+) => {
+  logger.info({
+    type: "HubSpot",
+    logMessage: { message: `Checking for ${objectType} property group ${groupName}` }
+  })
+  let shouldCreateGroup = false;
+  hubspotClient.setAccessToken(accessToken);
+  try {
+    const checkGroupResponse = await hubspotClient.crm.properties.groupsApi.getByNameWithHttpInfo(objectType, groupName);
+    if (checkGroupResponse.httpStatusCode == 404){
+      shouldCreateGroup = true;
+    } else if (checkGroupResponse.httpStatusCode == 200){
+      logger.info({
+        type: "HubSpot",
+        logMessage: { message: `${objectType} property group already exists, skipping...` }
+      })
+    } else {
+      logger.info({
+        type: "HubSpot",
+        logMessage: {
+          message: `Unkown response code for ${objectType} property group, skippping...`
+        },
+      });
+    }
+  } catch (error: any) {
+    let errorCode = error.code ?? error;
+    if (errorCode == 404) {
+      shouldCreateGroup = true;
+    } else {
+      handleError(error);
+    }
+  }
+  return shouldCreateGroup;
+};
+
+export const checkForProperty = async (
+  accessToken: string,
+  objectType: string,
+  propertyName: string
+) => {
+  logger.info({
+    type: "HubSpot",
+    logMessage: { message: `Checking for ${objectType} property ${propertyName}` }
+  });
+  let shouldCreateProperty = false;
+  hubspotClient.setAccessToken(accessToken);
+  try{
+    const checkPropertyResponse = await hubspotClient.crm.properties.coreApi.getByNameWithHttpInfo(objectType,propertyName);
+    if (checkPropertyResponse.httpStatusCode == 404){
+      shouldCreateProperty = true;
+    } else if (checkPropertyResponse.httpStatusCode == 200) {
+      logger.info({
+        type: "HubSpot",
+        logMessage: { message: `${objectType} property ${propertyName} already exists, skipping...` }
+      })
+    } else {
+      logger.info({
+        type: "HubSpot",
+        logMessage: { message: `Unkown response code for ${objectType} property ${propertyName}, skippping...` }
+      })
+    }
+  } catch(error:any) {
+    let errorCode = error.code ?? error;
+    if (errorCode == 404) {
+      shouldCreateProperty = true;
+    } else {
+      handleError(error);
+    }
+  }
+  return shouldCreateProperty;
 };
