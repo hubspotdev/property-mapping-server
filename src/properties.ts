@@ -336,6 +336,7 @@ export const createNativeProperty = async (
   return createPropertyResponse;
 };
 
+// Check for an existing property or property group
 export const checkForPropertyOrGroup = async (
   accessToken: string,
   objectType: string,
@@ -343,11 +344,11 @@ export const checkForPropertyOrGroup = async (
   propertyOrGroup: string
 ) => {
   let propertyOrGroupExists: boolean = false;
-  const isGroupString: string = propertyOrGroup == 'group' ? 'group ' : '';
+  const isGroupString: string = propertyOrGroup == 'group' ? 'property group' : 'property';
   let checkPropertyResponse: any;
   logger.info({
     type: "HubSpot",
-    logMessage: { message: `Checking for ${objectType} property ${isGroupString}${propertyName}` }
+    logMessage: { message: `Checking for ${objectType} ${isGroupString} ${propertyName}` }
   });
   hubspotClient.setAccessToken(accessToken);
   try{
@@ -359,25 +360,34 @@ export const checkForPropertyOrGroup = async (
       throw new Error(`Invalid schema type provided: ${propertyOrGroup}`);
     }
 
+    // Check the response to see if the property or group exists
     if ( checkPropertyResponse?.httpStatusCode == 404){
+      // 404: property or group doesn't exist, and we should create it
+      // Note: the current API client throws a 404 error if the property doesn't exist
+      // Keeping this 404 check in case the client is changed
       propertyOrGroupExists = false;
     } else if (checkPropertyResponse?.httpStatusCode == 200) {
+      // 200: property or group was found, we can skip creating it
       propertyOrGroupExists = true
       logger.info({
         type: "HubSpot",
-        logMessage: { message: `${objectType} property ${isGroupString}${propertyName} already exists, skipping...` }
+        logMessage: { message: `${objectType} ${isGroupString} ${propertyName} already exists, skipping...` }
       })
     } else {
+      // Handle other unexpected errors
       logger.info({
         type: "HubSpot",
-        logMessage: { message: `Unkown response code for ${objectType} property ${isGroupString}${propertyName}, skippping...` }
+        logMessage: { message: `Unkown response code for ${objectType} ${isGroupString} ${propertyName}` }
       })
     }
   } catch(error:unknown) {
+    // The current client throws a 404 error so we need to catch errors and check for the 404 code
     let errorCode: any = (error instanceof Error && "code" in error) ? error?.code : error;
     if (errorCode == 404) {
+      // 404: property or group doesn't exist, and we should create it
       propertyOrGroupExists = false;
     } else {
+      // Handle other unexpected errors
       handleError(error);
     }
   }
