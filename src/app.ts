@@ -11,8 +11,7 @@ import {
   createCompanyIdProperty,
   createNativeProperty,
   convertToPropertyForDB,
-  checkForPropertyGroup,
-  checkForProperty
+  checkForPropertyOrGroup
 } from "./properties";
 import shutdown from "./utils/shutdown";
 import { logger } from "./utils/logger";
@@ -48,24 +47,24 @@ app.get(
           });
 
           // Check for contacts property group, create if missing
-          const shouldCreateContactsGroup = await checkForPropertyGroup(accessToken, 'contacts', 'integration_properties');
-          if (shouldCreateContactsGroup) await createPropertyGroupForContacts(accessToken);
+          const contactGroupExists = await checkForPropertyOrGroup(accessToken, 'contacts', 'integration_properties', 'group');
+          if (!contactGroupExists) await createPropertyGroupForContacts(accessToken);
 
           // Check for companies property group, create if missing
-          const shouldCreateCompaniesGroup = await checkForPropertyGroup(accessToken, 'companies', 'integration_properties');
-          if (shouldCreateCompaniesGroup) await createPropertyGroupForCompanies(accessToken);
+          const companiesGroupExists = await checkForPropertyOrGroup(accessToken, 'companies', 'integration_properties', 'group');
+          if (!companiesGroupExists) await createPropertyGroupForCompanies(accessToken);
 
           // Check for required contact property, create if missing
-          const shouldCreateRequiredContactProperty = await checkForProperty(accessToken, 'contacts', 'example_required');
-          if (shouldCreateRequiredContactProperty) await createRequiredContactProperty(accessToken);
+          const requiredContactPropertyExists = await checkForPropertyOrGroup(accessToken, 'contacts', 'example_required', 'property');
+          if (!requiredContactPropertyExists) await createRequiredContactProperty(accessToken);
 
           // Check for custom conact id property, create if missing
-          const shouldCreateContactIdProperty = await checkForProperty(accessToken, 'contacts', 'native_system_contact_identifier');
-          if (shouldCreateContactIdProperty ) await createContactIdProperty(accessToken);
+          const contactIdPropertyExists = await checkForPropertyOrGroup(accessToken, 'contacts', 'native_system_contact_identifier', 'property');
+          if (!contactIdPropertyExists ) await createContactIdProperty(accessToken);
 
           // Check for custom company id property, create if missing
-          const shouldCreateCompanyIdProperty = await checkForProperty(accessToken, 'companies', 'native_system_company_identifier');
-          if (shouldCreateCompanyIdProperty) await createCompanyIdProperty(accessToken);
+          const companyIdPropertyExists = await checkForPropertyOrGroup(accessToken, 'companies', 'native_system_company_identifier', 'property');
+          if (!companyIdPropertyExists) await createCompanyIdProperty(accessToken);
 
           res.redirect(`http://localhost:${PORT - 1}/`);
         }

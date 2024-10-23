@@ -336,78 +336,50 @@ export const createNativeProperty = async (
   return createPropertyResponse;
 };
 
-export const checkForPropertyGroup = async (
+export const checkForPropertyOrGroup = async (
   accessToken: string,
   objectType: string,
-  groupName: string
+  propertyName: string,
+  propertyOrGroup: string
 ) => {
+  let propertyOrGroupExists: boolean = false;
+  const isGroupString: string = propertyOrGroup == 'group' ? 'group ' : '';
+  let checkPropertyResponse: any;
   logger.info({
     type: "HubSpot",
-    logMessage: { message: `Checking for ${objectType} property group ${groupName}` }
-  })
-  let shouldCreateGroup = false;
-  hubspotClient.setAccessToken(accessToken);
-  try {
-    const checkGroupResponse = await hubspotClient.crm.properties.groupsApi.getByNameWithHttpInfo(objectType, groupName);
-    if (checkGroupResponse.httpStatusCode == 404){
-      shouldCreateGroup = true;
-    } else if (checkGroupResponse.httpStatusCode == 200){
-      logger.info({
-        type: "HubSpot",
-        logMessage: { message: `${objectType} property group already exists, skipping...` }
-      })
-    } else {
-      logger.info({
-        type: "HubSpot",
-        logMessage: {
-          message: `Unkown response code for ${objectType} property group, skippping...`
-        },
-      });
-    }
-  } catch (error: any) {
-    let errorCode = error.code ?? error;
-    if (errorCode == 404) {
-      shouldCreateGroup = true;
-    } else {
-      handleError(error);
-    }
-  }
-  return shouldCreateGroup;
-};
-
-export const checkForProperty = async (
-  accessToken: string,
-  objectType: string,
-  propertyName: string
-) => {
-  logger.info({
-    type: "HubSpot",
-    logMessage: { message: `Checking for ${objectType} property ${propertyName}` }
+    logMessage: { message: `Checking for ${objectType} property ${isGroupString}${propertyName}` }
   });
-  let shouldCreateProperty = false;
   hubspotClient.setAccessToken(accessToken);
   try{
-    const checkPropertyResponse = await hubspotClient.crm.properties.coreApi.getByNameWithHttpInfo(objectType,propertyName);
-    if (checkPropertyResponse.httpStatusCode == 404){
-      shouldCreateProperty = true;
-    } else if (checkPropertyResponse.httpStatusCode == 200) {
+    if ( propertyOrGroup == 'property' ){
+      checkPropertyResponse = await hubspotClient.crm.properties.coreApi.getByNameWithHttpInfo(objectType, propertyName);
+    } else if ( propertyOrGroup == 'group' ){
+      checkPropertyResponse = await hubspotClient.crm.properties.groupsApi.getByNameWithHttpInfo(objectType, propertyName);
+    } else {
+      throw new Error(`Invalid schema type provided: ${propertyOrGroup}`);
+    }
+
+    if ( checkPropertyResponse?.httpStatusCode == 404){
+      propertyOrGroupExists = false;
+    } else if (checkPropertyResponse?.httpStatusCode == 200) {
+      propertyOrGroupExists = true
       logger.info({
         type: "HubSpot",
-        logMessage: { message: `${objectType} property ${propertyName} already exists, skipping...` }
+        logMessage: { message: `${objectType} property ${isGroupString}${propertyName} already exists, skipping...` }
       })
     } else {
       logger.info({
         type: "HubSpot",
-        logMessage: { message: `Unkown response code for ${objectType} property ${propertyName}, skippping...` }
+        logMessage: { message: `Unkown response code for ${objectType} property ${isGroupString}${propertyName}, skippping...` }
       })
     }
-  } catch(error:any) {
-    let errorCode = error.code ?? error;
+  } catch(error:unknown) {
+    let errorCode: any = (error instanceof Error && "code" in error) ? error?.code : error;
     if (errorCode == 404) {
-      shouldCreateProperty = true;
+      propertyOrGroupExists = false;
     } else {
       handleError(error);
     }
   }
-  return shouldCreateProperty;
+  return propertyOrGroupExists;
 };
