@@ -345,7 +345,7 @@ export const checkForPropertyOrGroup = async (
 ) => {
   let propertyOrGroupExists: boolean = false;
   const isGroupString: string = propertyOrGroup == 'group' ? 'property group' : 'property';
-  let checkPropertyResponse: any;
+  let getPropertyResponse: any;
   logger.info({
     type: "HubSpot",
     logMessage: { message: `Checking for ${objectType} ${isGroupString} ${propertyName}` }
@@ -353,20 +353,20 @@ export const checkForPropertyOrGroup = async (
   hubspotClient.setAccessToken(accessToken);
   try{
     if ( propertyOrGroup == 'property' ){
-      checkPropertyResponse = await hubspotClient.crm.properties.coreApi.getByNameWithHttpInfo(objectType, propertyName);
+      getPropertyResponse = await hubspotClient.crm.properties.coreApi.getByNameWithHttpInfo(objectType, propertyName);
     } else if ( propertyOrGroup == 'group' ){
-      checkPropertyResponse = await hubspotClient.crm.properties.groupsApi.getByNameWithHttpInfo(objectType, propertyName);
+      getPropertyResponse = await hubspotClient.crm.properties.groupsApi.getByNameWithHttpInfo(objectType, propertyName);
     } else {
       throw new Error(`Invalid schema type provided: ${propertyOrGroup}`);
     }
 
     // Check the response to see if the property or group exists
-    if ( checkPropertyResponse?.httpStatusCode == 404){
+    if ( getPropertyResponse?.httpStatusCode == 404){
       // 404: property or group doesn't exist, and we should create it
       // Note: the current API client throws a 404 error if the property doesn't exist
       // Keeping this 404 check in case the client is changed
       propertyOrGroupExists = false;
-    } else if (checkPropertyResponse?.httpStatusCode == 200) {
+    } else if (getPropertyResponse?.httpStatusCode == 200) {
       // 200: property or group was found, we can skip creating it
       propertyOrGroupExists = true
       logger.info({
