@@ -37,7 +37,6 @@ app.get(
         const authInfo = await redeemCode(code.toString());
         if (authInfo) {
           const accessToken = authInfo.accessToken;
-
           logger.info({
             type: "HubSpot",
             logMessage: {
@@ -78,11 +77,11 @@ app.get(
         }
       } catch (error) {
         handleError(error, "There was an issue in the Oauth callback ");
+        let errMessageParam: string = `/?errMessage=${String(error)}`;
         if (error instanceof Error){
-          res.redirect(`/?errMessage=${error.message}`);
+          errMessageParam = `/?errMessage=${error.message}`;
         }
-        res.redirect(`/?errMessage=${String(error)}`)
-
+        res.redirect(errMessageParam);
       }
     }
   },
