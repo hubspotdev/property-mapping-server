@@ -18,6 +18,7 @@ import {
   PropertyCreateFieldTypeEnum,
   PropertyCreateTypeEnum,
 } from "@hubspot/api-client/lib/codegen/crm/properties";
+import { logger } from "./utils/logger";
 
 const TTL = 5 * 60 * 1000; // 5 Minute TTL in milliseconds
 
@@ -71,6 +72,10 @@ export const convertToPropertyForDB = (
 };
 
 export const createPropertyGroupForContacts = async (accessToken: string) => {
+  logger.info({
+    type: "HubSpot",
+    logMessage: { message: "Creating contact property group..." },
+  });
   hubspotClient.setAccessToken(accessToken);
   try {
     const propertyGroupCreateResponse =
@@ -79,12 +84,20 @@ export const createPropertyGroupForContacts = async (accessToken: string) => {
         label: "Integration Properties",
         displayOrder: 13,
       });
+    logger.info({
+      type: "HubSpot",
+      logMessage: { message: "Contact property group created!" },
+    });
   } catch (error) {
     handleError(error, "There was an issue while creating the property group ");
   }
 };
 
 export const createPropertyGroupForCompanies = async (accessToken: string) => {
+  logger.info({
+    type: "HubSpot",
+    logMessage: { message: "Creating company property group..." },
+  });
   hubspotClient.setAccessToken(accessToken);
   try {
     const propertyGroupCreateResponse =
@@ -93,7 +106,10 @@ export const createPropertyGroupForCompanies = async (accessToken: string) => {
         label: "Integration Properties",
         displayOrder: 13,
       });
-    console.log("Company property group created!");
+    logger.info({
+      type: "HubSpot",
+      logMessage: { message: "Company property group created!" },
+    });
   } catch (error: unknown) {
     handleError(
       error,
@@ -103,6 +119,10 @@ export const createPropertyGroupForCompanies = async (accessToken: string) => {
 };
 
 export const createRequiredContactProperty = async (accessToken: string) => {
+  logger.info({
+    type: "HubSpot",
+    logMessage: { message: "Creating required contact property..." },
+  });
   hubspotClient.setAccessToken(accessToken);
   try {
     const propertyCreateResponse =
@@ -114,6 +134,10 @@ export const createRequiredContactProperty = async (accessToken: string) => {
         fieldType: PropertyCreateFieldTypeEnum.Text,
         groupName: "integration_properties",
       });
+    logger.info({
+      type: "HubSpot",
+      logMessage: { message: "Required contact property created!" },
+    });
   } catch (error) {
     handleError(
       error,
@@ -123,6 +147,10 @@ export const createRequiredContactProperty = async (accessToken: string) => {
 };
 
 export const createContactIdProperty = async (accessToken: string) => {
+  logger.info({
+    type: "HubSpot",
+    logMessage: { message: "Creating custom contact ID property..." },
+  });
   hubspotClient.setAccessToken(accessToken);
   try {
     const propertyCreateResponse =
@@ -136,7 +164,10 @@ export const createContactIdProperty = async (accessToken: string) => {
         groupName: "integration_properties",
         hasUniqueValue: true,
       });
-    console.log("Custom contact ID property created!");
+    logger.info({
+      type: "HubSpot",
+      logMessage: { message: "Custom contact ID property created!" },
+    });
   } catch (error: unknown) {
     handleError(
       error,
@@ -146,6 +177,10 @@ export const createContactIdProperty = async (accessToken: string) => {
 };
 
 export const createCompanyIdProperty = async (accessToken: string) => {
+  logger.info({
+    type: "HubSpot",
+    logMessage: { message: "Creating custom company ID property..." },
+  });
   hubspotClient.setAccessToken(accessToken);
   try {
     const propertyCreateResponse =
@@ -159,7 +194,10 @@ export const createCompanyIdProperty = async (accessToken: string) => {
         groupName: "integration_properties",
         hasUniqueValue: true,
       });
-    console.log("Custom company ID property created!");
+    logger.info({
+      type: "HubSpot",
+      logMessage: { message: "Custom company ID property created!" },
+    });
   } catch (error: unknown) {
     handleError(
       error,
@@ -296,4 +334,62 @@ export const createNativeProperty = async (
     },
   });
   return createPropertyResponse;
+};
+
+// Check for an existing property or property group
+export const checkForPropertyOrGroup = async (
+  accessToken: string,
+  objectType: string,
+  propertyName: string,
+  propertyOrGroup: string
+) => {
+  let propertyOrGroupExists: boolean = false;
+  const isGroupString: string = propertyOrGroup == 'group' ? 'property group' : 'property';
+  let getPropertyResponse: any;
+  logger.info({
+    type: "HubSpot",
+    logMessage: { message: `Checking for ${objectType} ${isGroupString} ${propertyName}` }
+  });
+  hubspotClient.setAccessToken(accessToken);
+  try{
+    if ( propertyOrGroup == 'property' ){
+      getPropertyResponse = await hubspotClient.crm.properties.coreApi.getByNameWithHttpInfo(objectType, propertyName);
+    } else if ( propertyOrGroup == 'group' ){
+      getPropertyResponse = await hubspotClient.crm.properties.groupsApi.getByNameWithHttpInfo(objectType, propertyName);
+    } else {
+      throw new Error(`Invalid schema type provided: ${propertyOrGroup}`);
+    }
+
+    // Check the response to see if the property or group exists
+    if ( getPropertyResponse?.httpStatusCode == 404){
+      // 404: property or group doesn't exist, and we should create it
+      // Note: the current API client throws a 404 error if the property doesn't exist
+      // Keeping this 404 check in case the client is changed
+      propertyOrGroupExists = false;
+    } else if (getPropertyResponse?.httpStatusCode == 200) {
+      // 200: property or group was found, we can skip creating it
+      propertyOrGroupExists = true
+      logger.info({
+        type: "HubSpot",
+        logMessage: { message: `${objectType} ${isGroupString} ${propertyName} already exists, skipping...` }
+      })
+    } else {
+      // Handle other unexpected errors
+      logger.info({
+        type: "HubSpot",
+        logMessage: { message: `Unkown response code for ${objectType} ${isGroupString} ${propertyName}` }
+      })
+    }
+  } catch(error:unknown) {
+    // The current client throws a 404 error so we need to catch errors and check for the 404 code
+    let errorCode: any = (error instanceof Error && "code" in error) ? error?.code : error;
+    if (errorCode == 404) {
+      // 404: property or group doesn't exist, and we should create it
+      propertyOrGroupExists = false;
+    } else {
+      // Handle other unexpected errors
+      handleError(error);
+    }
+  }
+  return propertyOrGroupExists;
 };

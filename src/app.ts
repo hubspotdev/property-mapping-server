@@ -11,6 +11,7 @@ import {
   createCompanyIdProperty,
   createNativeProperty,
   convertToPropertyForDB,
+  checkForPropertyOrGroup
 } from "./properties";
 import shutdown from "./utils/shutdown";
 import { logger } from "./utils/logger";
@@ -43,35 +44,26 @@ app.get(
               message: "OAuth complete! Setting up integration properties...",
             },
           });
-          logger.info({
-            type: "HubSpot",
-            logMessage: { message: "Creating contact property group..." },
-          });
-          await createPropertyGroupForContacts(accessToken);
 
-          logger.info({
-            type: "HubSpot",
-            logMessage: { message: "Creating company property group..." },
-          });
-          await createPropertyGroupForCompanies(accessToken);
+          // Check for contacts property group, create if missing
+          const contactGroupExists = await checkForPropertyOrGroup(accessToken, 'contacts', 'integration_properties', 'group');
+          if (!contactGroupExists) await createPropertyGroupForContacts(accessToken);
 
-          logger.info({
-            type: "HubSpot",
-            logMessage: { message: "Creating required contact property..." },
-          });
-          await createRequiredContactProperty(accessToken);
+          // Check for companies property group, create if missing
+          const companiesGroupExists = await checkForPropertyOrGroup(accessToken, 'companies', 'integration_properties', 'group');
+          if (!companiesGroupExists) await createPropertyGroupForCompanies(accessToken);
 
-          logger.info({
-            type: "HubSpot",
-            logMessage: { message: "Creating custom contact ID property..." },
-          });
-          await createContactIdProperty(accessToken);
+          // Check for required contact property, create if missing
+          const requiredContactPropertyExists = await checkForPropertyOrGroup(accessToken, 'contacts', 'example_required', 'property');
+          if (!requiredContactPropertyExists) await createRequiredContactProperty(accessToken);
 
-          logger.info({
-            type: "HubSpot",
-            logMessage: { message: "Creating custom company ID property..." },
-          });
-          await createCompanyIdProperty(accessToken);
+          // Check for custom conact id property, create if missing
+          const contactIdPropertyExists = await checkForPropertyOrGroup(accessToken, 'contacts', 'native_system_contact_identifier', 'property');
+          if (!contactIdPropertyExists ) await createContactIdProperty(accessToken);
+
+          // Check for custom company id property, create if missing
+          const companyIdPropertyExists = await checkForPropertyOrGroup(accessToken, 'companies', 'native_system_company_identifier', 'property');
+          if (!companyIdPropertyExists) await createCompanyIdProperty(accessToken);
 
           res.redirect(`http://localhost:${PORT - 1}/`);
         }
