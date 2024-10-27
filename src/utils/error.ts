@@ -21,7 +21,7 @@ function isHubSpotApiError(error: any): boolean {
     hasHubspotFields ||
     Boolean(
       error?.message?.includes("hubapi") ||
-        error?.logMessage.message?.body.includes("hubspot-correlation-id"),
+        error?.logMessage?.message?.body.includes("hubspot-correlation-id"),
     )
   );
 }
