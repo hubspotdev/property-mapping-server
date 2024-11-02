@@ -101,7 +101,6 @@ const exchangeForTokens = async (
     grant_type,
     refresh_token,
   } = exchangeProof;
-
   try {
     const tokenResponse = await hubspotClient.oauth.tokensApi.create(
       grant_type,
@@ -165,9 +164,17 @@ const getAccessToken = async (customerId: string): Promise<string | void> => {
         customerId,
       },
     })) as Authorization;
-    if (currentCreds?.expiresAt && currentCreds?.expiresAt > new Date()) {
+    console.log('Current Creds info')
+    console.log(currentCreds)
+    console.log(typeof currentCreds)
+    console.log('===============')
+    if(!currentCreds){
+      return "missing" // considering throwing an error here intead of a string that you have to know what it means
+    }
+    else if (currentCreds?.expiresAt && currentCreds?.expiresAt > new Date()) {
       return currentCreds?.accessToken;
-    } else {
+   }
+    else {
       const updatedCreds = await exchangeForTokens({
         ...EXCHANGE_CONSTANTS,
         grant_type: "refresh_token",

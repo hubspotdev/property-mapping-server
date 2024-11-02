@@ -260,8 +260,14 @@ export const getHubSpotProperties = async (
 
   const accessToken: string | void = await getAccessToken(customerId);
   console.log(accessToken);
+  if(accessToken == 'missing'){
+    return undefined
+  }
 
-  if (accessToken) hubspotClient.setAccessToken(accessToken);
+  if (accessToken){ hubspotClient.setAccessToken(accessToken)}
+
+
+
   // add DB call to check if we've looked in the last 5 minutes
   // https://www.prisma.io/docs/reference/api-reference/prisma-schema-reference#updatedat
   const cacheResults = await checkPropertiesCache(customerId);
