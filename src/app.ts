@@ -19,6 +19,7 @@ import { saveMapping, getMappings, deleteMapping } from "./mappings";
 import { PORT, getCustomerId } from "./utils/utils";
 import { Mapping, Properties } from "@prisma/client";
 import handleError from "./utils/error";
+import { PropertyUpdate } from '@hubspot/api-client/lib/codegen/crm/properties';
 
 const app: Application = express();
 app.use(express.json());
@@ -85,6 +86,10 @@ app.get(
     try {
       const customerId: string = getCustomerId();
       const properties = await getHubSpotProperties(customerId, false);
+
+      if(!properties){
+        res.send(authUrl)
+      }
       res.send(properties);
     } catch (error) {
       handleError(error, "There was an issue getting Hubspot properties ");
@@ -92,11 +97,11 @@ app.get(
     }
   },
 );
-// app.get("/api/hubspot-properties-skip-cache", async (req: Request, res: Response) => {
-//   const customerId = getCustomerId();
-//   const properties = await getHubSpotProperties(customerId, true);
-//   res.send(properties);
-// });
+app.get("/api/hubspot-properties-skip-cache", async (req: Request, res: Response) => {
+  const customerId = getCustomerId();
+  const properties = await getHubSpotProperties(customerId, true);
+  res.send(properties);
+});
 
 // app.get("/api/native-properties/", async (req: Request, res: Response) => {
 //   const customerId = getCustomerId();
