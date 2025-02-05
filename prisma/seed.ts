@@ -5,7 +5,15 @@ import handleError from '../src/utils/error';
 const prisma = new PrismaClient({
   log: ['info', 'warn', 'error'],
 });
+
+// Skip seeding if we're in test environment
+
 async function main(): Promise<void> {
+  if (process.env.NODE_ENV === 'test') {
+    console.log('Skipping seed in test environment');
+    return;
+  }
+
   const firstname = await prisma.properties.upsert({
     where: {
       name_object_customerId: {
@@ -29,7 +37,10 @@ async function main(): Promise<void> {
 
     },
   });
-  console.log(firstname);
+
+  if (process.env.NODE_ENV !== 'test') {
+    console.log(firstname);
+  }
   const contactIdentifier = await prisma.properties.upsert({
     where: {
       name_object_customerId: {
@@ -53,7 +64,10 @@ async function main(): Promise<void> {
       unique:true,
     },
   });
-  console.log(contactIdentifier);
+
+  if (process.env.NODE_ENV !== 'test') {
+    console.log(contactIdentifier);
+  }
 
   const lastname = await prisma.properties.upsert({
     where: {
@@ -77,7 +91,10 @@ async function main(): Promise<void> {
         }
     },
   });
-  console.log(lastname);
+
+  if (process.env.NODE_ENV !== 'test') {
+    console.log(lastname);
+  }
   const exampleCustom = await prisma.properties.upsert({
     where: {
       name_object_customerId: {
@@ -100,7 +117,10 @@ async function main(): Promise<void> {
         }
     },
   });
-  console.log(exampleCustom);
+
+  if (process.env.NODE_ENV !== 'test') {
+    console.log(exampleCustom);
+  }
   const exampleRequired = await prisma.properties.upsert({
     where: {
       name_object_customerId: {
@@ -123,7 +143,10 @@ async function main(): Promise<void> {
         }
     },
   });
-  console.log(exampleRequired);
+
+  if (process.env.NODE_ENV !== 'test') {
+    console.log(exampleRequired);
+  }
   const companyIdentifier = await prisma.properties.upsert({
     where: {
       name_object_customerId: {
@@ -147,7 +170,10 @@ async function main(): Promise<void> {
       unique:true,
     },
   });
-  console.log(companyIdentifier);
+
+  if (process.env.NODE_ENV !== 'test') {
+    console.log(companyIdentifier);
+  }
   const customCompany = await prisma.properties.upsert({
     where: {
       name_object_customerId: {
@@ -170,7 +196,10 @@ async function main(): Promise<void> {
         }
     },
   });
-  console.log(customCompany);
+
+  if (process.env.NODE_ENV !== 'test') {
+    console.log(customCompany);
+  }
   const companyName = await prisma.properties.upsert({
     where: {
       name_object_customerId: {
@@ -193,7 +222,10 @@ async function main(): Promise<void> {
         }
     },
   });
-  console.log(companyName);
+
+  if (process.env.NODE_ENV !== 'test') {
+    console.log(companyName);
+  }
   const industry = await prisma.properties.upsert({
     where: {
       name_object_customerId: {
@@ -216,7 +248,10 @@ async function main(): Promise<void> {
         }
     },
   });
-  console.log(industry);
+
+  if (process.env.NODE_ENV !== 'test') {
+    console.log(industry);
+  }
   const num_employees = await prisma.properties.upsert({
     where: {
       name_object_customerId: {
@@ -239,7 +274,10 @@ async function main(): Promise<void> {
         }
     },
   });
-  console.log(num_employees);
+
+  if (process.env.NODE_ENV !== 'test') {
+    console.log(num_employees);
+  }
 }
 
 main()
@@ -247,4 +285,4 @@ main()
     handleError(e, 'There was an issue seeding the database ', true)
   })
 
-  export default prisma
+export default prisma
