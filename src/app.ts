@@ -20,10 +20,17 @@ import { PORT, getCustomerId } from "./utils/utils";
 import { Mapping, Properties } from "@prisma/client";
 import handleError from "./utils/error";
 import { PropertyUpdate } from '@hubspot/api-client/lib/codegen/crm/properties';
+import swaggerUi from 'swagger-ui-express';
+import swaggerJsdoc from 'swagger-jsdoc';
+import { swaggerOptions } from './config/swagger';
 
 const app: Application = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+const swaggerSpec = swaggerJsdoc(swaggerOptions);
+
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.get("/api/install", (req: Request, res: Response) => {
   res.send(authUrl);
@@ -80,6 +87,24 @@ app.get(
   },
 );
 
+/**
+ * @swagger
+ * /api/hubspot-properties:
+ *   get:
+ *     summary: Get HubSpot properties
+ *     tags: [Properties]
+ *     responses:
+ *       200:
+ *         description: List of HubSpot properties
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Property'
+ *       500:
+ *         description: Internal Server Error
+ */
 app.get(
   "/api/hubspot-properties",
   async (req: Request, res: Response): Promise<void> => {
@@ -109,6 +134,28 @@ app.get("/api/hubspot-properties-skip-cache", async (req: Request, res: Response
 //   res.send(properties);
 // });
 
+/**
+ * @swagger
+ * /api/native-properties/:
+ *   post:
+ *     summary: Create a new native property
+ *     tags: [Properties]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Property'
+ *     responses:
+ *       200:
+ *         description: Created property
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Property'
+ *       500:
+ *         description: Internal Server Error
+ */
 app.post("/api/native-properties/", async (req: Request, res: Response) => {
   const { body } = req;
   console.log("Raw Body", body);
@@ -149,6 +196,28 @@ app.get(
   },
 );
 
+/**
+ * @swagger
+ * /api/mappings:
+ *   post:
+ *     summary: Create a new mapping
+ *     tags: [Mappings]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Mapping'
+ *     responses:
+ *       200:
+ *         description: Created mapping
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Mapping'
+ *       500:
+ *         description: Error saving mapping
+ */
 app.post(
   "/api/mappings",
   async (req: Request, res: Response): Promise<void> => {
@@ -162,6 +231,27 @@ app.post(
   },
 );
 
+/**
+ * @swagger
+ * /api/mappings/{mappingId}:
+ *   delete:
+ *     summary: Delete a mapping
+ *     tags: [Mappings]
+ *     parameters:
+ *       - in: path
+ *         name: mappingId
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: ID of the mapping to delete
+ *     responses:
+ *       200:
+ *         description: Mapping deleted successfully
+ *       400:
+ *         description: Invalid mapping ID format
+ *       500:
+ *         description: Internal Server Error
+ */
 app.delete(
   "/api/mappings/:mappingId",
   async (req: Request, res: Response): Promise<void> => {
