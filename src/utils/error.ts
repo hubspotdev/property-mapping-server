@@ -1,6 +1,6 @@
 import { logger } from "./logger";
 import shutdown from "./shutdown";
-import { LogObject } from "../../types/common";
+import { LogObject } from "../types/common";
 
 function isHubSpotApiError(error: any): boolean {
   // Check for presence of typical HubSpot headers

@@ -12,7 +12,7 @@ import { hubspotClient } from "./auth";
 
 import { Request } from "express";
 
-import { PropertyCache } from "default";
+import { PropertyCache } from "./types/common";
 import handleError from "./utils/error";
 import {
   PropertyCreateFieldTypeEnum,
@@ -388,7 +388,7 @@ export const checkForPropertyOrGroup = async (
     }
   } catch(error:unknown) {
     // The current client throws a 404 error so we need to catch errors and check for the 404 code
-    let errorCode: any = (error instanceof Error && "code" in error) ? error?.code : error;
+    const errorCode: any = (error instanceof Error && "code" in error) ? error?.code : error;
     if (errorCode == 404) {
       // 404: property or group doesn't exist, and we should create it
       propertyOrGroupExists = false;

@@ -1,4 +1,4 @@
-import { LogObject } from "default";
+import { LogObject } from "../types/common";
 
 class Logger {
   private log(message: LogObject): void {
