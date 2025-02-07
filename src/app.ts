@@ -32,41 +32,10 @@ const swaggerSpec = swaggerJsdoc(swaggerOptions);
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-/**
- * @swagger
- * /api/install:
- *   get:
- *     summary: Get HubSpot OAuth installation URL
- *     tags: [Auth]
- *     responses:
- *       200:
- *         description: HubSpot OAuth URL
- *         content:
- *           text/plain:
- *             schema:
- *               type: string
- */
 app.get("/api/install", (req: Request, res: Response) => {
   res.send(authUrl);
 });
 
-/**
- * @swagger
- * /oauth-callback:
- *   get:
- *     summary: Handle OAuth callback from HubSpot
- *     tags: [Auth]
- *     parameters:
- *       - in: query
- *         name: code
- *         schema:
- *           type: string
- *         required: true
- *         description: OAuth authorization code
- *     responses:
- *       302:
- *         description: Redirect to frontend with success or error
- */
 app.get(
   "/oauth-callback",
   async (req: Request, res: Response): Promise<void> => {
