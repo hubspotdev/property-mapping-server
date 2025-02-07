@@ -51,6 +51,14 @@ Setup:
 4. Run `npm install` to install the required Node packages.
 5. Run `npm run db-init` to create the necessary tables in PostgreSQL
 6. Optional: Run `npm run seed` to seed the database with test data
+7. In your [HubSpot public app](https://developers.hubspot.com/docs/api/creating-an-app), add localhost:3001/oauth-callback as a redirect URL
+8. The app uses the following scopes:
+- crm.schemas.companies.read
+- crm.schemas.companies.write
+- crm.schemas.contacts.read
+- crm.schemas.contacts.write
+9. Run `npm run dev` to start the server
+10. Visit `http://localhost:3001/api/install` in a browser to get the OAuth install link
 
 ### Running the Application:
 - **Development Mode**: Start the application in development mode to run locally with live reload.
