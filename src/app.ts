@@ -32,10 +32,41 @@ const swaggerSpec = swaggerJsdoc(swaggerOptions);
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
+/**
+ * @swagger
+ * /api/install:
+ *   get:
+ *     summary: Get HubSpot OAuth installation URL
+ *     tags: [Auth]
+ *     responses:
+ *       200:
+ *         description: HubSpot OAuth URL
+ *         content:
+ *           text/plain:
+ *             schema:
+ *               type: string
+ */
 app.get("/api/install", (req: Request, res: Response) => {
   res.send(authUrl);
 });
 
+/**
+ * @swagger
+ * /oauth-callback:
+ *   get:
+ *     summary: Handle OAuth callback from HubSpot
+ *     tags: [Auth]
+ *     parameters:
+ *       - in: query
+ *         name: code
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: OAuth authorization code
+ *     responses:
+ *       302:
+ *         description: Redirect to frontend with success or error
+ */
 app.get(
   "/oauth-callback",
   async (req: Request, res: Response): Promise<void> => {
@@ -99,9 +130,16 @@ app.get(
  *         content:
  *           application/json:
  *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Property'
+ *               type: object
+ *               properties:
+ *                 contactProperties:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/HubSpotProperty'
+ *                 companyProperties:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/HubSpotProperty'
  *       500:
  *         description: Internal Server Error
  */
@@ -136,7 +174,7 @@ app.get("/api/hubspot-properties-skip-cache", async (req: Request, res: Response
 
 /**
  * @swagger
- * /api/native-properties/:
+ * /api/native-properties:
  *   post:
  *     summary: Create a new native property
  *     tags: [Properties]
@@ -156,7 +194,7 @@ app.get("/api/hubspot-properties-skip-cache", async (req: Request, res: Response
  *       500:
  *         description: Internal Server Error
  */
-app.post("/api/native-properties/", async (req: Request, res: Response) => {
+app.post("/api/native-properties", async (req: Request, res: Response) => {
   const { body } = req;
   console.log("Raw Body", body);
   const customerId = getCustomerId();
@@ -272,18 +310,56 @@ app.delete(
   },
 );
 
-// app.get("/api/mappings", async (req: Request, res: Response) => {
-//   const mappings = await getMappings(getCustomerId());
-//   const formattedMappings = mappings.map((mapping) => {
-//     const { nativeName, hubspotLabel, hubspotName, id, object } = mapping;
-//     return {
-//       id,
-//       nativeName,
-//       property: { name: hubspotName, label: hubspotLabel, object },
-//     };
-//   });
-//   res.send(formattedMappings);
-// });
+/**
+ * @swagger
+ * /api/mappings:
+ *   get:
+ *     summary: Get all mappings for the current customer
+ *     tags: [Mappings]
+ *     responses:
+ *       200:
+ *         description: List of formatted mappings
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: integer
+ *                     description: The mapping ID
+ *                   nativeName:
+ *                     type: string
+ *                     description: The native property name
+ *                   property:
+ *                     type: object
+ *                     properties:
+ *                       name:
+ *                         type: string
+ *                         description: The HubSpot property name
+ *                       label:
+ *                         type: string
+ *                         description: The HubSpot property label
+ *                       object:
+ *                         type: string
+ *                         enum: [Contact, Company]
+ *                         description: The object type
+ *       500:
+ *         description: Internal Server Error
+ */
+app.get("/api/mappings", async (req: Request, res: Response) => {
+  const mappings = await getMappings(getCustomerId());
+  const formattedMappings = mappings?.map((mapping) => {
+    const { nativeName, hubspotLabel, hubspotName, id, object } = mapping;
+    return {
+      id,
+      nativeName,
+      property: { name: hubspotName, label: hubspotLabel, object },
+    };
+  });
+  res.send(formattedMappings);
+});
 
 const server = app.listen(PORT, function () {
   console.log(`App is listening on port ${PORT} !`);
