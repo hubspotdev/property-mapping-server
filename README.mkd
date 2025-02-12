@@ -1,50 +1,135 @@
 # Property Mappings Server
 
-Used a getting started with [Express and Typescript](https://dev.to/codeozz/express-with-typescript-starter-explained-fast-4dn7) to bootstrap the project
+A Node.js server that manages property mappings between native systems and HubSpot, featuring OAuth integration, Prisma database management, and a caching layer for optimized HubSpot API interactions.
 
-## What's included
+## Table of Contents
+- [What this project does](#what-this-project-does)
+- [Why is this project useful](#why-is-this-project-useful)
+- [Setup](#setup)
+- [Scopes](#scopes)
+- [Endpoints](#endpoints)
+  - [Auth](#auth)
+  - [Properties](#properties)
+  - [Mappings](#mappings)
+- [Available Scripts](#available-scripts)
+- [Project Structure](#project-structure)
+- [Dependencies](#dependencies)
+  - [Core](#core)
+  - [Development](#development)
+- [License](#license)
+- [Where to get help?](#where-to-get-help)
+- [Who maintains and contributes to this project](#who-maintains-and-contributes-to-this-project)
 
-- A database using prisma to store auth and mappings
-- An OAuth handler to install apps
-- A basic caching layer to reduce unecesssary requests to HubSpot's API
+## What this project does
 
-## Getting Started
+This project is an Express.js application designed to integrate with HubSpot's API, facilitating the management and synchronization of properties and mappings between a native system and HubSpot.
+For the client-side interface, please refer to the [React frontend repository](https://github.com/hubspotdev/property-mapping-client) which works in conjunction with this backend application.
 
-```
-npm install
-npm run db-init
-npm run seed
-npm run dev
-```
+Key concepts:
+- Properties in HubSpot refer to the fields that store information about CRM objects (contacts, companies, etc.). For instance, a contact can have properties like "First Name", "Last Name", or custom properties specific to your business needs.
 
-### Install
+- Property mapping refers to the configuration process where users set up the rules or criteria that define how properties from their native system should map to HubSpot properties. This ensures data consistency when syncing between systems.
 
-```
-npm install
-```
+- Property definition involves specifying the nature and characteristics of the property, such as its type (string, number, etc.), whether it's required, and any validation rules.
 
-### Run
+## Why is this project useful
 
-```
-npm run dev
-```
+- **Comprehensive Property Management**: Provides endpoints for managing properties and their mappings between native systems and HubSpot, allowing for complex data synchronization.
+- **Data Consistency**: Ensures data consistency across platforms by:
+  - Maintaining property mappings in a local database
+  - Caching HubSpot property definitions to reduce API calls
+  - Validating property types and formats
+  - Handling bidirectional updates between systems
 
-### Build TS file
 
-```
-npm run build
-```
 
-### Run for prod
+## Endpoints:
 
-```
-npm run prod
-```
+- **GET /api/install**: Initiates the OAuth installation process and returns the authorization URL for HubSpot.
 
-### DB Set Up
+- **GET /oauth-callback**: Endpoint for handling HubSpot OAuth callback, processing the provided code to obtain an access token.
 
-must have database up and running
+- **GET /api/hubspot-properties**: Retrieves all HubSpot properties, leveraging cache to improve performance.
 
-npx prisma db push (creates schema)
+- **GET /api/hubspot-properties-skip-cache**: Retrieves all HubSpot properties bypassing cache to ensure up-to-date data.
 
-npx prisma db seed (adds data)
+- **POST /api/native-properties/**: Creates new native properties in the system based on data sent in the request body.
+
+- **GET /api/native-properties-with-mappings**: Retrieves native properties along with their HubSpot mappings for the authenticated customer.
+
+- **POST /api/mappings**: Saves a new mapping between native properties and HubSpot properties.
+
+- **DELETE /api/mappings/** :mappingId: Deletes a specified mapping by its ID.
+
+
+## Getting started with the project:
+
+Setup:
+
+1. Download and install [PostgreSQL](https://www.postgresql.org/download/), make sure it's running, and create an empty database. You need the username and password (defaults username is postgres and no password)
+2. Clone the repo
+3. Create the .env file with these entries (see examples in the [.env.example](./.env.example) file):
+   - DATABASE_URL the (local) url to the postgres database (e.g. `postgresql://{username}:{password}@localhost:5432/{database name}`)
+   - CLIENT_ID from Hubspot public app
+   - CLIENT_SECRET from Hubspot public app
+4. Run `npm install` to install the required Node packages.
+5. Run `npm run db-init` to create the necessary tables in PostgreSQL
+6. Optional: Run `npm run seed` to seed the database with test data
+7. In your [HubSpot public app](https://developers.hubspot.com/docs/api/creating-an-app), add `localhost:3001/oauth-callback` as a redirect URL
+8. The app uses the following scopes:
+- crm.schemas.companies.read
+- crm.schemas.companies.write
+- crm.schemas.contacts.read
+- crm.schemas.contacts.write
+9. Run `npm run dev` to start the server
+10. Visit `http://localhost:3001/api/install` in a browser to get the OAuth install link
+
+## Scopes
+
+The following HubSpot OAuth scopes are required:
+- `crm.schemas.companies.write` - Create and update company properties
+- `crm.schemas.contacts.write` - Create and update contact properties
+- `crm.schemas.companies.read` - Read company properties and their definitions
+- `crm.schemas.contacts.read` - Read contact properties and their definitions
+
+
+## Available Scripts
+
+- `npm run dev` - Start development server with hot reload
+- `npm run prod` - Run production server
+- `npm run build` - Build TypeScript files
+- `npm run seed` - Seed the database with initial data
+- `npm run db-init` - Initialize database schema
+- `npm run lint` - Run ESLint
+- `npm run format` - Format code with Prettier
+- `npm test` - Run tests
+- `npm run test:watch` - Run tests in watch mode
+
+## Dependencies
+
+### Core
+- @prisma/client - Database ORM
+- express - Web framework
+- @hubspot/api-client - HubSpot API client
+- dotenv - Environment configuration
+- swagger-jsdoc/swagger-ui-express - API documentation
+
+### Development
+- typescript - TypeScript compiler
+- prisma - Database toolkit
+- jest - Testing framework
+- nodemon - Development server
+- eslint/prettier - Code formatting and linting
+- ts-node - TypeScript execution
+- supertest - HTTP testing
+
+## Where to get help?
+
+If you encounter any bugs or issues, please report them by opening a GitHub issue. For feedback or suggestions for new code examples, we encourage you to use this [form](https://survey.hsforms.com/1RT0f09LSTHuflzNtMbr2jA96it).
+
+## Who maintains and contributes to this project
+
+Various teams at HubSpot that focus on developer experience and app marketplace quality maintain and contribute to this project. In particular, this project was made possible by @therealdadams, @rahmona-henry, @zman81988, @natalijabujevic0708, and @zradford
+
+## License
+MIT
