@@ -1,7 +1,6 @@
 import { getMappings, deleteMapping, saveMapping } from '../mappings';
 import { jest, describe, it, expect, beforeEach } from '@jest/globals';
 import prisma from '../../prisma/seed';
-import * as utils from '../utils/utils';
 import { Mapping } from '@prisma/client';
 import handleError from '../utils/error';
 
