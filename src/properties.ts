@@ -5,7 +5,7 @@ import {
   HubSpotPropertiesCache,
   Prisma,
 } from "@prisma/client";
-import { getAccessToken } from "./auth";
+import { setAccessToken } from "./auth";
 
 import prisma from "../prisma/seed";
 import { hubspotClient } from "./auth";
@@ -76,7 +76,7 @@ export const createPropertyGroupForContacts = async (accessToken: string) => {
     type: "HubSpot",
     logMessage: { message: "Creating contact property group..." },
   });
-  hubspotClient.setAccessToken(accessToken);
+  await setAccessToken();
   try {
     const propertyGroupCreateResponse =
       await hubspotClient.crm.properties.groupsApi.create("contact", {
@@ -98,7 +98,7 @@ export const createPropertyGroupForCompanies = async (accessToken: string) => {
     type: "HubSpot",
     logMessage: { message: "Creating company property group..." },
   });
-  hubspotClient.setAccessToken(accessToken);
+  await setAccessToken();
   try {
     const propertyGroupCreateResponse =
       await hubspotClient.crm.properties.groupsApi.create("company", {
@@ -123,7 +123,7 @@ export const createRequiredContactProperty = async (accessToken: string) => {
     type: "HubSpot",
     logMessage: { message: "Creating required contact property..." },
   });
-  hubspotClient.setAccessToken(accessToken);
+  await setAccessToken();
   try {
     const propertyCreateResponse =
       await hubspotClient.crm.properties.coreApi.create("contact", {
@@ -151,7 +151,7 @@ export const createContactIdProperty = async (accessToken: string) => {
     type: "HubSpot",
     logMessage: { message: "Creating custom contact ID property..." },
   });
-  hubspotClient.setAccessToken(accessToken);
+  await setAccessToken();
   try {
     const propertyCreateResponse =
       await hubspotClient.crm.properties.coreApi.create("contact", {
@@ -181,7 +181,7 @@ export const createCompanyIdProperty = async (accessToken: string) => {
     type: "HubSpot",
     logMessage: { message: "Creating custom company ID property..." },
   });
-  hubspotClient.setAccessToken(accessToken);
+  await setAccessToken();
   try {
     const propertyCreateResponse =
       await hubspotClient.crm.properties.coreApi.create("company", {
@@ -258,15 +258,7 @@ export const getHubSpotProperties = async (
 ): Promise<{ contactProperties: any; companyProperties: any } | undefined> => {
   // const propertiesCacheIsValid = await checkPropertiesCache(customerId);
 
-  const accessToken: string | void = await getAccessToken(customerId);
-  console.log(accessToken);
-  if(accessToken == 'missing'){
-    return undefined
-  }
-
-  if (accessToken){ hubspotClient.setAccessToken(accessToken)}
-
-
+  await setAccessToken();
 
   // add DB call to check if we've looked in the last 5 minutes
   // https://www.prisma.io/docs/reference/api-reference/prisma-schema-reference#updatedat
@@ -356,7 +348,7 @@ export const checkForPropertyOrGroup = async (
     type: "HubSpot",
     logMessage: { message: `Checking for ${objectType} ${isGroupString} ${propertyName}` }
   });
-  hubspotClient.setAccessToken(accessToken);
+  await setAccessToken();
   try{
     if ( propertyOrGroup == 'property' ){
       getPropertyResponse = await hubspotClient.crm.properties.coreApi.getByNameWithHttpInfo(objectType, propertyName);

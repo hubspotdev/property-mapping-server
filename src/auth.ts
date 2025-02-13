@@ -195,6 +195,19 @@ const getAccessToken = async (customerId: string): Promise<string | void> => {
     );
   }
 };
+async function setAccessToken(): Promise<Client> {
+  try {
+    const accessToken = await getAccessToken(getCustomerId());
+    if (!accessToken) {
+      throw new Error('No access token returned');
+    }
+    hubspotClient.setAccessToken(accessToken);
+    return hubspotClient;
+  } catch (error) {
+    handleError(error, 'Error setting access token');
+    throw new Error('Failed to authenticate HubSpot client');
+  }
+}
 
 export {
   authUrl,
@@ -203,4 +216,5 @@ export {
   getAccessToken,
   prisma,
   hubspotClient,
+  setAccessToken,
 };
