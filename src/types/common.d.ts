@@ -1,4 +1,4 @@
-declare module "default" {
+
   interface Property {
     name: string;
     label?: string | null;
@@ -94,4 +94,3 @@ type LogLevel = 'Info' | 'Warning' | 'Error';
     modificationMetadata: ModificationMetadata;
     formField: boolean;
   }
-}

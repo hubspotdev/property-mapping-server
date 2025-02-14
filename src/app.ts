@@ -20,10 +20,17 @@ import { PORT, getCustomerId } from "./utils/utils";
 import { Mapping, Properties } from "@prisma/client";
 import handleError from "./utils/error";
 import { PropertyUpdate } from '@hubspot/api-client/lib/codegen/crm/properties';
+import swaggerUi from 'swagger-ui-express';
+import swaggerJsdoc from 'swagger-jsdoc';
+import { swaggerOptions } from './config/swagger';
 
 const app: Application = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+const swaggerSpec = swaggerJsdoc(swaggerOptions);
+
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.get("/api/install", (req: Request, res: Response) => {
   res.send(authUrl);
@@ -80,6 +87,31 @@ app.get(
   },
 );
 
+/**
+ * @swagger
+ * /api/hubspot-properties:
+ *   get:
+ *     summary: Get HubSpot properties
+ *     tags: [Properties]
+ *     responses:
+ *       200:
+ *         description: List of HubSpot properties
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 contactProperties:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/HubSpotProperty'
+ *                 companyProperties:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/HubSpotProperty'
+ *       500:
+ *         description: Internal Server Error
+ */
 app.get(
   "/api/hubspot-properties",
   async (req: Request, res: Response): Promise<void> => {
@@ -109,7 +141,29 @@ app.get("/api/hubspot-properties-skip-cache", async (req: Request, res: Response
 //   res.send(properties);
 // });
 
-app.post("/api/native-properties/", async (req: Request, res: Response) => {
+/**
+ * @swagger
+ * /api/native-properties:
+ *   post:
+ *     summary: Create a new native property
+ *     tags: [Properties]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Property'
+ *     responses:
+ *       200:
+ *         description: Created property
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Property'
+ *       500:
+ *         description: Internal Server Error
+ */
+app.post("/api/native-properties", async (req: Request, res: Response) => {
   const { body } = req;
   console.log("Raw Body", body);
   const customerId = getCustomerId();
@@ -149,6 +203,28 @@ app.get(
   },
 );
 
+/**
+ * @swagger
+ * /api/mappings:
+ *   post:
+ *     summary: Create a new mapping
+ *     tags: [Mappings]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Mapping'
+ *     responses:
+ *       200:
+ *         description: Created mapping
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Mapping'
+ *       500:
+ *         description: Error saving mapping
+ */
 app.post(
   "/api/mappings",
   async (req: Request, res: Response): Promise<void> => {
@@ -162,6 +238,27 @@ app.post(
   },
 );
 
+/**
+ * @swagger
+ * /api/mappings/{mappingId}:
+ *   delete:
+ *     summary: Delete a mapping
+ *     tags: [Mappings]
+ *     parameters:
+ *       - in: path
+ *         name: mappingId
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: ID of the mapping to delete
+ *     responses:
+ *       200:
+ *         description: Mapping deleted successfully
+ *       400:
+ *         description: Invalid mapping ID format
+ *       500:
+ *         description: Internal Server Error
+ */
 app.delete(
   "/api/mappings/:mappingId",
   async (req: Request, res: Response): Promise<void> => {
@@ -182,18 +279,56 @@ app.delete(
   },
 );
 
-// app.get("/api/mappings", async (req: Request, res: Response) => {
-//   const mappings = await getMappings(getCustomerId());
-//   const formattedMappings = mappings.map((mapping) => {
-//     const { nativeName, hubspotLabel, hubspotName, id, object } = mapping;
-//     return {
-//       id,
-//       nativeName,
-//       property: { name: hubspotName, label: hubspotLabel, object },
-//     };
-//   });
-//   res.send(formattedMappings);
-// });
+/**
+ * @swagger
+ * /api/mappings:
+ *   get:
+ *     summary: Get all mappings for the current customer
+ *     tags: [Mappings]
+ *     responses:
+ *       200:
+ *         description: List of formatted mappings
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: integer
+ *                     description: The mapping ID
+ *                   nativeName:
+ *                     type: string
+ *                     description: The native property name
+ *                   property:
+ *                     type: object
+ *                     properties:
+ *                       name:
+ *                         type: string
+ *                         description: The HubSpot property name
+ *                       label:
+ *                         type: string
+ *                         description: The HubSpot property label
+ *                       object:
+ *                         type: string
+ *                         enum: [Contact, Company]
+ *                         description: The object type
+ *       500:
+ *         description: Internal Server Error
+ */
+app.get("/api/mappings", async (req: Request, res: Response) => {
+  const mappings = await getMappings(getCustomerId());
+  const formattedMappings = mappings?.map((mapping) => {
+    const { nativeName, hubspotLabel, hubspotName, id, object } = mapping;
+    return {
+      id,
+      nativeName,
+      property: { name: hubspotName, label: hubspotLabel, object },
+    };
+  });
+  res.send(formattedMappings);
+});
 
 const server = app.listen(PORT, function () {
   console.log(`App is listening on port ${PORT} !`);
