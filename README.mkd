@@ -68,14 +68,14 @@ Setup:
 
 1. Download and install [PostgreSQL](https://www.postgresql.org/download/), make sure it's running, and create an empty database. You need the username and password (defaults username is postgres and no password)
 2. Clone the repo
-3. Create the .env file with these entries (see examples in the [.env.example](./.env.example) file):
+3. In your [HubSpot public app](https://developers.hubspot.com/docs/api/creating-an-app), add `localhost:3001/oauth-callback` as a redirect URL, set the requied scopes to be those in the [Scopes](#scopes) section down below
+4. Create the .env file with these entries (see examples in the [.env.example](./.env.example) file):
    - DATABASE_URL the (local) url to the postgres database (e.g. `postgresql://{username}:{password}@localhost:5432/{database name}`)
    - CLIENT_ID from Hubspot public app
    - CLIENT_SECRET from Hubspot public app
-4. Run `npm install` to install the required Node packages.
-5. Run `npm run db-init` to create the necessary tables in PostgreSQL
-6. Optional: Run `npm run seed` to seed the database with test data
-7. In your [HubSpot public app](https://developers.hubspot.com/docs/api/creating-an-app), add `localhost:3001/oauth-callback` as a redirect URL
+5. Run `npm install` to install the required Node packages.
+6. Run `npm run db-init` to create the necessary tables in PostgreSQL
+7. Optional: Run `npm run seed` to seed the database with test data
 8. Run `npm run dev` to start the server
 9. Visit `http://localhost:3001/api/install` in a browser to get the OAuth install link
 
