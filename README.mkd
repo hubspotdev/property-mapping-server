@@ -118,6 +118,7 @@ The following HubSpot OAuth scopes are required:
 - ts-node - TypeScript execution
 - supertest - HTTP testing
 
+
 ## Where to get help?
 
 If you encounter any bugs or issues, please report them by opening a GitHub issue. For feedback or suggestions for new code examples, we encourage you to use this [form](https://survey.hsforms.com/1RT0f09LSTHuflzNtMbr2jA96it).
@@ -126,5 +127,3 @@ If you encounter any bugs or issues, please report them by opening a GitHub issu
 
 Various teams at HubSpot that focus on developer experience and app marketplace quality maintain and contribute to this project. In particular, this project was made possible by @therealdadams, @rahmona-henry, @zman81988, @natalijabujevic0708, and @zradford
 
-## License
-MIT
