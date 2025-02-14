@@ -1,5 +1,6 @@
 import "dotenv/config";
 import * as hubspot from "@hubspot/api-client";
+import { Client } from "@hubspot/api-client";
 import { Authorization } from "@prisma/client";
 import { PORT, getCustomerId } from "./utils/utils";
 import handleError from "./utils/error";

@@ -77,7 +77,7 @@ Setup:
 6. Run `npm run db-init` to create the necessary tables in PostgreSQL
 7. Optional: Run `npm run seed` to seed the database with test data
 8. Run `npm run dev` to start the server
-9. Visit `http://localhost:3001/api/install` in a browser to get the OAuth install link
+9. Visit `http://localhost:3001/api/install` in a browser to get the OAuth install link, note, this is normally handled by the [React frontend repository](https://github.com/hubspotdev/property-mapping-client) so you will be redirected to non-existant location if that's not running.
 
 ## Scopes
 
