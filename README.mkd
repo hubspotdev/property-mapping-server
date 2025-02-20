@@ -47,7 +47,7 @@ For the client-side interface, please refer to the [React frontend repository](h
 
 1. Download and install [PostgreSQL](https://www.postgresql.org/download/), make sure it's running, and create an empty database. You need the username and password (defaults username is postgres and no password)
 2. Clone the repo
-3. In your [HubSpot public app](https://developers.hubspot.com/docs/api/creating-an-app), add `localhost:3001/oauth-callback` as a redirect URL, set the requied scopes to be those in the [Scopes](#scopes) section down below
+3. In your [HubSpot public app](https://developers.hubspot.com/docs/api/creating-an-app), add `localhost:3001/oauth-callback` as a redirect URL, set the required scopes to be those in the [Scopes](#scopes) section down below
 4. Create the .env file with these entries (see examples in the [.env.example](./.env.example) file):
    - DATABASE_URL the (local) url to the postgres database (e.g. `postgresql://{username}:{password}@localhost:5432/{database name}`)
    - CLIENT_ID from Hubspot public app
