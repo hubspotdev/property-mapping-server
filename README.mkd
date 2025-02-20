@@ -5,27 +5,27 @@ A Node.js server that manages property mappings between native systems and HubSp
 ## Table of Contents
 - [What this project does](#what-this-project-does)
 - [Why is this project useful](#why-is-this-project-useful)
-- [Setup](#setup)
-- [Scopes](#scopes)
+- [Getting started with the project](#getting-started-with-the-project)
+  - [Setup](#setup)
+  - [Scopes](#scopes)
 - [Endpoints](#endpoints)
-  - [Auth](#auth)
-  - [Properties](#properties)
-  - [Mappings](#mappings)
+  - [Authentication Endpoints](#authentication-endpoints)
+  - [Properties Endpoints](#properties-endpoints)
+  - [Mappings Endpoints](#mappings-endpoints)
 - [Available Scripts](#available-scripts)
-- [Project Structure](#project-structure)
 - [Dependencies](#dependencies)
   - [Core](#core)
   - [Development](#development)
-- [License](#license)
 - [Where to get help?](#where-to-get-help)
 - [Who maintains and contributes to this project](#who-maintains-and-contributes-to-this-project)
+- [License](#license)
 
 ## What this project does
 
 This project is an Express.js application designed to integrate with HubSpot's API, facilitating the management and synchronization of properties and mappings between a native system and HubSpot.
 For the client-side interface, please refer to the [React frontend repository](https://github.com/hubspotdev/property-mapping-client) which works in conjunction with this backend application.
 
-Key concepts:
+**Key concepts**:
 - Properties in HubSpot refer to the fields that store information about CRM objects (contacts, companies, etc.). For instance, a contact can have properties like "First Name", "Last Name", or custom properties specific to your business needs.
 
 - Property mapping refers to the configuration process where users set up the rules or criteria that define how properties from their native system should map to HubSpot properties. This ensures data consistency when syncing between systems.
@@ -41,30 +41,9 @@ Key concepts:
   - Validating property types and formats
   - Handling bidirectional updates between systems
 
-
-
-## Endpoints:
-
-- **GET /api/install**: Initiates the OAuth installation process and returns the authorization URL for HubSpot.
-
-- **GET /oauth-callback**: Endpoint for handling HubSpot OAuth callback, processing the provided code to obtain an access token.
-
-- **GET /api/hubspot-properties**: Retrieves all HubSpot properties, leveraging cache to improve performance.
-
-- **GET /api/hubspot-properties-skip-cache**: Retrieves all HubSpot properties bypassing cache to ensure up-to-date data.
-
-- **POST /api/native-properties/**: Creates new native properties in the system based on data sent in the request body.
-
-- **GET /api/native-properties-with-mappings**: Retrieves native properties along with their HubSpot mappings for the authenticated customer.
-
-- **POST /api/mappings**: Saves a new mapping between native properties and HubSpot properties.
-
-- **DELETE /api/mappings/** :mappingId: Deletes a specified mapping by its ID.
-
-
 ## Getting started with the project:
 
-Setup:
+### Setup:
 
 1. Download and install [PostgreSQL](https://www.postgresql.org/download/), make sure it's running, and create an empty database. You need the username and password (defaults username is postgres and no password)
 2. Clone the repo
@@ -81,12 +60,34 @@ Setup:
 
 ## Scopes
 
-The following HubSpot OAuth scopes are required:
-- `crm.schemas.companies.write` - Create and update company properties
-- `crm.schemas.contacts.write` - Create and update contact properties
-- `crm.schemas.companies.read` - Read company properties and their definitions
-- `crm.schemas.contacts.read` - Read contact properties and their definitions
+- `crm.schemas.companies.write` - Create, delete, or make changes to property settings for companies
+- `crm.schemas.contacts.write` - Create, delete, or make changes to property settings for contacts
+- `crm.schemas.companies.read` - View details about property settings for companies
+- `crm.schemas.contacts.read` - View details about property settings for contacts
 
+## Endpoints:
+
+### Authentication Endpoints
+
+- `GET /api/install`: Initiates the OAuth installation process and returns the authorization URL for HubSpot.
+
+- `GET /oauth-callback`: Endpoint for handling HubSpot OAuth callback, processing the provided code to obtain an access token.
+
+### Properties Endpoints
+
+- `GET /api/hubspot-properties`: Retrieves all HubSpot properties, leveraging cache to improve performance.
+
+- `GET /api/hubspot-properties-skip-cache`: Retrieves all HubSpot properties bypassing cache to ensure up-to-date data.
+
+- `POST /api/native-properties`: Creates new native properties in the system based on data sent in the request body.
+
+### Mappings Endpoints
+
+- `GET /api/native-properties-with-mappings`: Retrieves native properties along with their HubSpot mappings for the authenticated customer.
+
+- `POST /api/mappings`: Saves a new mapping between native properties and HubSpot properties.
+
+- `DELETE /api/mappings/{mappingID}` Deletes a specified mapping by its ID.
 
 ## Available Scripts
 
@@ -118,7 +119,6 @@ The following HubSpot OAuth scopes are required:
 - ts-node - TypeScript execution
 - supertest - HTTP testing
 
-
 ## Where to get help?
 
 If you encounter any bugs or issues, please report them by opening a GitHub issue. For feedback or suggestions for new code examples, we encourage you to use this [form](https://survey.hsforms.com/1RT0f09LSTHuflzNtMbr2jA96it).
@@ -127,3 +127,6 @@ If you encounter any bugs or issues, please report them by opening a GitHub issu
 
 Various teams at HubSpot that focus on developer experience and app marketplace quality maintain and contribute to this project. In particular, this project was made possible by @therealdadams, @rahmona-henry, @zman81988, @natalijabujevic0708, and @zradford
 
+## License
+
+MIT
