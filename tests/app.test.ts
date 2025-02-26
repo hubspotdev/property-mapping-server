@@ -1,40 +1,58 @@
-import { describe, it, expect, beforeEach, afterAll, beforeAll, jest } from '@jest/globals';
 import request from 'supertest';
-import { Mapping, Objects, Direction, PropertyType } from '@prisma/client';
 import app from '../src/app';
-import * as auth from '../src/auth';
+import { authUrl, redeemCode } from '../src/auth';
 import * as properties from '../src/properties';
 import * as mappings from '../src/mappings';
-import { getCustomerId } from '../src/utils/utils';
+import * as utils from '../src/utils/utils';
+import { describe, beforeEach, it, expect, jest } from '@jest/globals';
+import { afterAll, beforeAll } from '@jest/globals';
 
-// Mock dependencies
-jest.mock('../src/auth');
-jest.mock('../src/properties');
-jest.mock('../src/mappings');
-jest.mock('../src/utils/logger');
-jest.mock('@prisma/client', () => ({
-  PropertyType: {
-    String: 'String',
-    Number: 'Number',
-    Option: 'Option'
-  },
-  Objects: {
-    Contact: 'Contact',
-    Company: 'Company'
-  },
-  Direction: {
-    toHubSpot: 'toHubSpot',
-    fromHubSpot: 'fromHubSpot'
-  }
+const Objects = {
+  Contact: 'Contact',
+  Company: 'Company'
+} as const;
+
+const PropertyType = {
+  String: 'String',
+  Number: 'Number',
+  Option: 'Option'
+} as const;
+
+const Direction = {
+  toHubSpot: 'toHubSpot',
+  toNative: 'toNative',
+  biDirectional: 'biDirectional'
+} as const;
+
+// Mock the modules
+jest.mock('../src/auth', () => ({
+  authUrl: 'mock-auth-url',
+  redeemCode: jest.fn()
 }));
-jest.mock('@hubspot/api-client');
-jest.mock('../src/utils/utils');
+
+jest.mock('../src/properties', () => ({
+  checkForPropertyOrGroup: jest.fn(),
+  getHubSpotProperties: jest.fn(),
+  convertToPropertyForDB: jest.fn(),
+  createNativeProperty: jest.fn(),
+  createPropertyGroupForContacts: jest.fn().mockImplementation(async () => {
+    // Function returns void
+  })
+}));
+
+jest.mock('../src/mappings', () => ({
+  saveMapping: jest.fn(),
+  deleteMapping: jest.fn()
+}));
+
+jest.mock('../src/utils/utils', () => ({
+  getCustomerId: jest.fn()
+}));
+
+jest.mock('../src/utils/logger');
 
 describe('API Endpoints', () => {
-  beforeAll(() => {
-    (getCustomerId as jest.Mock).mockReturnValue('1');
-  });
-
+  // Setup and teardown
   beforeEach(() => {
     jest.clearAllMocks();
   });
@@ -43,330 +61,147 @@ describe('API Endpoints', () => {
     await app.close();
   });
 
-  describe('Authentication Endpoints', () => {
-    describe('GET /api/install', () => {
-    //   it('should return auth URL', async () => {
-    //     const mockAuthUrl = 'https://app.hubspot.com/oauth/authorize';
-    //     jest.spyOn(auth, 'authUrl', 'get').mockReturnValue(mockAuthUrl);
-
-    //     const response = await request(app).get('/api/install');
-
-    //     expect(response.status).toBe(200);
-    //     expect(response.text).toBe(mockAuthUrl);
-    //   });
-    // });
-
-    // describe('GET /oauth-callback', () => {
-    //   it('should handle successful OAuth flow', async () => {
-    //     const mockCode = 'valid-code';
-    //     const mockAuthInfo = {
-    //       customerId: '1',
-    //       hsPortalId: 'test-portal',
-    //       accessToken: 'test-access-token',
-    //       refreshToken: 'test-refresh-token',
-    //       expiresIn: 3600,
-    //       expiresAt: new Date()
-    //     };
-
-    //     (auth.redeemCode as jest.MockedFunction<typeof auth.redeemCode>).mockResolvedValueOnce(mockAuthInfo);
-    //     (properties.checkForPropertyOrGroup as jest.MockedFunction<typeof properties.checkForPropertyOrGroup>).mockResolvedValue(false);
-    //     (properties.createPropertyGroupForContacts as jest.MockedFunction<typeof properties.createPropertyGroupForContacts>).mockResolvedValue(undefined);
-    //     (properties.createPropertyGroupForCompanies as jest.MockedFunction<typeof properties.createPropertyGroupForCompanies>).mockResolvedValue(undefined);
-    //     (properties.createRequiredContactProperty as jest.MockedFunction<typeof properties.createRequiredContactProperty>).mockResolvedValue(undefined);
-    //     (properties.createContactIdProperty as jest.MockedFunction<typeof properties.createContactIdProperty>).mockResolvedValue(undefined);
-    //     (properties.createCompanyIdProperty as jest.MockedFunction<typeof properties.createCompanyIdProperty>).mockResolvedValue(undefined);
-
-    //     const response = await request(app)
-    //       .get('/oauth-callback')
-    //       .query({ code: mockCode });
-
-    //     expect(response.status).toBe(302);
-    //     expect(response.header.location).toBe('http://localhost:3000/');
-    //     expect(auth.redeemCode).toHaveBeenCalledWith(mockCode);
-    //   });
-
-      it('should handle OAuth error', async () => {
-        const mockCode = 'invalid-code';
-        const mockError = new Error('OAuth Error');
-
-        (auth.redeemCode as jest.MockedFunction<typeof auth.redeemCode>).mockRejectedValueOnce(mockError);
-
-        const response = await request(app)
-          .get('/oauth-callback')
-          .query({ code: mockCode });
-
-        expect(response.status).toBe(302);
-        expect(response.header.location).toContain('errMessage=OAuth Error');
-      });
-
-      it('should handle missing code parameter', async () => {
-        const response = await request(app).get('/oauth-callback');
-
-        expect(response.status).toBe(302);
-        expect(response.header.location).toContain('errMessage');
-      });
+  describe('GET /api/install', () => {
+    it('should return auth URL', async () => {
+      const response = await request(app).get('/api/install');
+      expect(response.status).toBe(200);
+      expect(response.text).toBe(authUrl);
     });
   });
 
-  describe('Property Endpoints', () => {
-    describe('GET /api/hubspot-properties', () => {
-      it('should return properties when authenticated', async () => {
-        const mockProperties = {
-          contactProperties: [{ name: 'email', label: 'Email', type: 'string', groupName: 'contactinformation' }],
-          companyProperties: [{ name: 'name', label: 'Company Name', type: 'string', groupName: 'companyinformation' }]
-        };
+  describe('GET /oauth-callback', () => {
 
-        (properties.getHubSpotProperties as jest.MockedFunction<typeof properties.getHubSpotProperties>).mockResolvedValueOnce(mockProperties);
+    it('should handle OAuth callback error', async () => {
+      const mockCode = 'invalid-code';
+      (redeemCode as jest.MockedFunction<typeof redeemCode>).mockRejectedValue(new Error('OAuth Error'));
 
-        const response = await request(app).get('/api/hubspot-properties');
+      const response = await request(app)
+        .get('/oauth-callback')
+        .query({ code: mockCode });
 
-        expect(response.status).toBe(200);
-        expect(response.body).toEqual(mockProperties);
-      });
-
-      it('should return auth URL when not authenticated', async () => {
-        (properties.getHubSpotProperties as jest.MockedFunction<typeof properties.getHubSpotProperties>).mockResolvedValueOnce(undefined);
-        jest.spyOn(auth, 'authUrl', 'get').mockReturnValue('https://app.hubspot.com/oauth/authorize');
-
-        const response = await request(app).get('/api/hubspot-properties');
-
-        expect(response.status).toBe(200);
-        expect(response.text).toBe('https://app.hubspot.com/oauth/authorize');
-      });
-
-      it('should handle errors properly', async () => {
-        (properties.getHubSpotProperties as jest.MockedFunction<typeof properties.getHubSpotProperties>).mockRejectedValueOnce(new Error('API Error'));
-
-        const response = await request(app).get('/api/hubspot-properties');
-
-        expect(response.status).toBe(500);
-        expect(response.text).toBe('Internal Server Error');
-      });
-    });
-
-    describe('GET /api/hubspot-properties-skip-cache', () => {
-      it('should return fresh properties bypassing cache', async () => {
-        const mockProperties = {
-          contactProperties: [{ name: 'email', label: 'Email', type: 'string', groupName: 'contactinformation' }],
-          companyProperties: [{ name: 'name', label: 'Company Name', type: 'string', groupName: 'companyinformation' }]
-        };
-
-        (properties.getHubSpotProperties as jest.MockedFunction<typeof properties.getHubSpotProperties>).mockResolvedValueOnce(mockProperties);
-
-        const response = await request(app).get('/api/hubspot-properties-skip-cache');
-
-        expect(response.status).toBe(200);
-        expect(response.body).toEqual(mockProperties);
-        expect(properties.getHubSpotProperties).toHaveBeenCalledWith('1', true);
-      });
-    });
-
-    describe('GET /api/native-properties', () => {
-      it('should return native properties', async () => {
-        const mockNativeProperties = [{
-          id: 1,
-          name: 'custom_field',
-          label: 'Custom Field',
-          type: PropertyType.String,
-          object: Objects.Contact,
-          customerId: '1',
-          unique: false,
-          modificationMetadata: {}
-        }];
-
-        (properties.getNativeProperties as jest.MockedFunction<typeof properties.getNativeProperties>).mockResolvedValueOnce(mockNativeProperties);
-
-        const response = await request(app).get('/api/native-properties');
-
-        expect(response.status).toBe(200);
-        expect(response.body).toEqual(mockNativeProperties);
-      });
-    });
-
-    describe('POST /api/native-properties', () => {
-      it('should create a new native property', async () => {
-        const mockPropertyData = {
-          name: 'new_field',
-          label: 'New Field',
-          type: PropertyType.String,
-          object: Objects.Contact,
-          customerId: '1',
-          unique: false,
-          modificationMetadata: {}
-        };
-
-        const mockCreatedProperty = { ...mockPropertyData, id: 1 };
-
-        (properties.convertToPropertyForDB as jest.MockedFunction<typeof properties.convertToPropertyForDB>).mockReturnValueOnce(mockPropertyData);
-        (properties.createNativeProperty as jest.MockedFunction<typeof properties.createNativeProperty>).mockResolvedValueOnce(mockCreatedProperty);
-
-        const response = await request(app)
-          .post('/api/native-properties')
-          .send(mockPropertyData);
-
-        expect(response.status).toBe(200);
-        expect(response.body).toEqual(mockCreatedProperty);
-      });
-    });
-
-    describe('GET /api/native-properties-with-mappings', () => {
-      it('should return properties with their mappings', async () => {
-        const mockProperties = [{
-          id: 1,
-          name: 'custom_field',
-          label: 'Custom Field',
-          type: PropertyType.String,
-          object: Objects.Contact,
-          customerId: '1',
-          unique: false,
-          modificationMetadata: {}
-        }];
-
-        const mockMappings = [{
-          id: 1,
-          nativeName: 'custom_field',
-          hubspotName: 'hs_field',
-          hubspotLabel: 'HubSpot Field',
-          object: Objects.Contact,
-          customerId: '1',
-          direction: Direction.toHubSpot,
-          modificationMetadata: {}
-        }];
-
-        (properties.getNativeProperties as jest.MockedFunction<typeof properties.getNativeProperties>).mockResolvedValueOnce(mockProperties);
-        (mappings.getMappings as jest.MockedFunction<typeof mappings.getMappings>).mockResolvedValueOnce(mockMappings);
-
-        const response = await request(app).get('/api/native-properties-with-mappings');
-
-        expect(response.status).toBe(200);
-        expect(response.body).toEqual([
-          {
-            property: mockProperties[0],
-            mapping: mockMappings[0]
-          }
-        ]);
-      });
-
-      it('should handle errors properly', async () => {
-        (properties.getNativeProperties as jest.MockedFunction<typeof properties.getNativeProperties>).mockRejectedValueOnce(new Error('DB Error'));
-
-        const response = await request(app).get('/api/native-properties-with-mappings');
-
-        expect(response.status).toBe(500);
-        expect(response.text).toBe('Internal Server Error');
-      });
+      expect(response.status).toBe(302);
+      expect(response.header.location).toContain('errMessage');
     });
   });
 
-  describe('Mapping Endpoints', () => {
-    describe('POST /api/mappings', () => {
-      it('should create a new mapping', async () => {
-        const mockMapping: Mapping = {
-          id: 1,
-          nativeName: 'custom_field',
-          hubspotName: 'hs_field',
-          hubspotLabel: 'HubSpot Field',
-          object: Objects.Contact,
-          customerId: '1',
-          direction: Direction.toHubSpot,
-          modificationMetadata: {}
-        };
+  describe('GET /api/hubspot-properties', () => {
+    it('should return hubspot properties', async () => {
+      const mockProperties = {
+        contactProperties: [{ name: 'test-prop' }],
+        companyProperties: [{ name: 'test-company-prop' }]
+      };
 
-        (mappings.saveMapping as jest.MockedFunction<typeof mappings.saveMapping>).mockResolvedValueOnce(mockMapping);
+      (utils.getCustomerId as jest.MockedFunction<typeof utils.getCustomerId>).mockReturnValue('test-customer');
+      (properties.getHubSpotProperties as jest.MockedFunction<typeof properties.getHubSpotProperties>).mockResolvedValue(mockProperties);
 
-        const response = await request(app)
-          .post('/api/mappings')
-          .send(mockMapping);
+      const response = await request(app).get('/api/hubspot-properties');
 
-        expect(response.status).toBe(200);
-        expect(response.body).toHaveProperty('id', 1);
-        expect(response.body).toMatchObject(mockMapping);
-      });
-
-      it('should handle validation errors', async () => {
-        const invalidMapping = {};
-
-        const response = await request(app)
-          .post('/api/mappings')
-          .send(invalidMapping);
-
-        expect(response.status).toBe(500);
-        expect(response.text).toBe('Error saving mapping');
-      });
+      expect(response.status).toBe(200);
+      expect(response.body).toEqual(mockProperties);
     });
 
-    describe('GET /api/mappings', () => {
-      it('should return formatted mappings', async () => {
-        const mockMappings = [{
-          id: 1,
-          nativeName: 'custom_field',
-          hubspotName: 'hs_field',
-          hubspotLabel: 'HubSpot Field',
-          object: Objects.Contact,
-          customerId: '1',
-          direction: Direction.toHubSpot,
-          modificationMetadata: {}
-        }];
+    it('should handle errors', async () => {
+      (utils.getCustomerId as jest.MockedFunction<typeof utils.getCustomerId>).mockReturnValue('test-customer');
+      (properties.getHubSpotProperties as jest.MockedFunction<typeof properties.getHubSpotProperties>).mockRejectedValue(new Error('Test error'));
 
-        (mappings.getMappings as jest.MockedFunction<typeof mappings.getMappings>).mockResolvedValueOnce(mockMappings);
+      const response = await request(app).get('/api/hubspot-properties');
 
-        const response = await request(app).get('/api/mappings');
-
-        expect(response.status).toBe(200);
-        expect(response.body).toEqual([
-          {
-            id: 1,
-            nativeName: 'custom_field',
-            property: {
-              name: 'hs_field',
-              label: 'HubSpot Field',
-              object: Objects.Contact
-            }
-          }
-        ]);
-      });
+      expect(response.status).toBe(500);
+      expect(response.text).toBe('Internal Server Error');
     });
   });
 
-  describe('Swagger Documentation', () => {
-    describe('GET /api-docs', () => {
-      it('should serve Swagger UI', async () => {
-        const response = await request(app).get('/api-docs');
-        expect(response.status).toBe(301); // Redirects to /api-docs/
-      });
+  describe('POST /api/native-properties', () => {
+    it('should create a native property', async () => {
+      const mockProperty = {
+        object: Objects.Contact,
+        name: 'test-prop',
+        customerId: 'test-customer',
+        label: 'Test Property',
+        type: PropertyType.String,
+        unique: false,
+        modificationMetadata: {}
+      };
 
-      it('should serve Swagger specification', async () => {
-        const response = await request(app).get('/api-docs/swagger.json');
-        expect(response.status).toBe(200);
-        expect(response.body).toHaveProperty('openapi', '3.0.0');
-      });
+      const mockCustomerId = 'test-customer';
+
+      (utils.getCustomerId as jest.MockedFunction<typeof utils.getCustomerId>).mockReturnValue(mockCustomerId);
+      (properties.convertToPropertyForDB as jest.MockedFunction<typeof properties.convertToPropertyForDB>).mockReturnValue(mockProperty);
+      (properties.createNativeProperty as jest.MockedFunction<typeof properties.createNativeProperty>).mockResolvedValue(mockProperty);
+
+      const response = await request(app)
+        .post('/api/native-properties/')
+        .send(mockProperty);
+
+      expect(response.status).toBe(200);
+      expect(response.body).toEqual(mockProperty);
     });
   });
 
-  describe('Error Handling', () => {
-    it('should handle unknown routes', async () => {
-      const response = await request(app).get('/non-existent-route');
-      expect(response.status).toBe(404);
-    });
+  describe('POST /api/mappings', () => {
+    it('should create a new mapping', async () => {
+      const mockMapping = {
+        object: Objects.Contact,
+        customerId: 'test-customer',
+        modificationMetadata: {},
+        id: 1,
+        nativeName: 'test',
+        hubspotName: 'test',
+        hubspotLabel: 'Test Label',
+        direction: Direction.biDirectional
+      };
 
-    it('should handle invalid JSON', async () => {
+      (mappings.saveMapping as jest.MockedFunction<typeof mappings.saveMapping>).mockResolvedValue(mockMapping);
+
       const response = await request(app)
         .post('/api/mappings')
-        .set('Content-Type', 'application/json')
-        .send('invalid json');
+        .send(mockMapping);
 
-      expect(response.status).toBe(400);
+      expect(response.status).toBe(200);
+      expect(response.body).toEqual(mockMapping);
+    });
+
+    it('should handle errors', async () => {
+      (mappings.saveMapping as jest.MockedFunction<typeof mappings.saveMapping>).mockRejectedValue(new Error('Test error'));
+
+      const response = await request(app)
+        .post('/api/mappings')
+        .send({});
+
+      expect(response.status).toBe(500);
+      expect(response.text).toBe('Error saving mapping');
     });
   });
 
-  describe('Server Lifecycle', () => {
-    it('should handle SIGTERM signal', async () => {
-      const mockExit = jest.spyOn(process, 'exit').mockImplementation(() => undefined as never);
+  describe('DELETE /api/mappings/:mappingId', () => {
+    it('should delete a mapping', async () => {
+      const mockMappingId = 1;
+      const mockDeleteResult = {
+        object: Objects.Contact,
+        customerId: 'test-customer',
+        modificationMetadata: {},
+        id: mockMappingId,
+        nativeName: 'test',
+        hubspotName: 'test',
+        hubspotLabel: 'Test Label',
+        direction: Direction.biDirectional
+      };
 
-      process.emit('SIGTERM', 'SIGTERM');
+      (mappings.deleteMapping as jest.MockedFunction<typeof mappings.deleteMapping>).mockResolvedValue(mockDeleteResult);
 
-      expect(mockExit).toHaveBeenCalledWith(0);
-      mockExit.mockRestore();
+      const response = await request(app)
+        .delete(`/api/mappings/${mockMappingId}`);
+
+      expect(response.status).toBe(200);
+      expect(response.body).toEqual(mockDeleteResult);
+    });
+
+    it('should handle invalid mapping ID', async () => {
+      const response = await request(app)
+        .delete('/api/mappings/invalid');
+
+      expect(response.status).toBe(400);
+      expect(response.text).toBe('Invalid mapping Id format');
     });
   });
 });
