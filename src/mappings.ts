@@ -31,7 +31,6 @@ const getMappings = async (
 const deleteMapping = async (
   mappingId: number,
 ): Promise<Mapping | undefined> => {
-  console.log(mappingId, "mappingId++");
   try {
     const deleteResults = await prisma.mapping.delete({
       where: {
@@ -93,47 +92,6 @@ const saveMapping = async (
   }
 };
 
-// const saveMappings = async (mappingsInput: Mapping[]) => {
-//   console.log("mappingsInput", mappingsInput);
 
-//   if (mappingsInput.length > 0) {
-//     const mappingResults = mappingsInput.map(async (maybeMapping) => {
-//       const mappingName = maybeMapping.nativeName;
-//       const hubspotName = maybeMapping.hubspotName;
-//       const hubspotLabel = maybeMapping.hubspotLabel;
-//       const object = maybeMapping.object;
-//       const direction = maybeMapping.direction;
-//       const customerId = getCustomerId();
-
-//       const mappingResult = await prisma.mapping.upsert({
-//         where: {
-//           nativeName_object_customerId: {
-//             nativeName: mappingName,
-//             customerId: customerId,
-//             object: object,
-//           },
-//         },
-//         update: {
-//           hubspotLabel,
-//           hubspotName,
-//           direction,
-//         },
-//         create: {
-//           hubspotLabel,
-//           hubspotName,
-//           nativeName: mappingName,
-//           object: object,
-//           customerId: customerId,
-//           direction: direction,
-//         },
-//       });
-
-//       return mappingResult;
-//     });
-
-//     return await Promise.all(mappingResults);
-//   }
-//   return {};
-// };
 
 export { deleteMapping, getMappings, saveMapping };

@@ -168,7 +168,6 @@ const getAccessToken = async (customerId: string): Promise<string | void> => {
     console.log('Current Creds info')
     console.log(currentCreds)
     console.log(typeof currentCreds)
-    console.log('===============')
     if(!currentCreds){
       return "missing" // considering throwing an error here intead of a string that you have to know what it means
     }

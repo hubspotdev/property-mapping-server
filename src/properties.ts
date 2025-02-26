@@ -321,7 +321,6 @@ export const createNativeProperty = async (
   customerId: string,
   data: Properties,
 ) => {
-  console.log("data", data);
   const createPropertyResponse = await prisma.properties.create({
     data: {
       ...data,
