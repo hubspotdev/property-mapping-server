@@ -31,7 +31,6 @@ const getMappings = async (
 const deleteMapping = async (
   mappingId: number,
 ): Promise<Mapping | undefined> => {
-  console.log(mappingId, "mappingId++");
   try {
     const deleteResults = await prisma.mapping.delete({
       where: {

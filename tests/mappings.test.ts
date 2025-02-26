@@ -1,11 +1,11 @@
-import { getMappings, deleteMapping, saveMapping } from '../mappings';
+import { getMappings, deleteMapping, saveMapping } from '../src/mappings';
 import { jest, describe, it, expect, beforeEach } from '@jest/globals';
-import prisma from '../../prisma/seed';
+import prisma from '../prisma/seed';
 import { Mapping } from '@prisma/client';
-import handleError from '../utils/error';
+import handleError from '../src/utils/error';
 
 // Mock the Prisma client
-jest.mock('../../prisma/seed', () => ({
+jest.mock('../prisma/seed', () => ({
   mapping: {
     findMany: jest.fn(),
     findUnique: jest.fn(),
@@ -15,12 +15,12 @@ jest.mock('../../prisma/seed', () => ({
 }));
 
 // Mock utils - this needs to be updated
-jest.mock('../utils/utils', () => ({
+jest.mock('../src/utils/utils', () => ({
   getCustomerId: jest.fn(() => 'cust_123')  // Provide a default mock implementation
 }));
 
 // Mock error handler
-jest.mock('../utils/error', () => ({
+jest.mock('../src/utils/error', () => ({
   __esModule: true,
   default: jest.fn(),
 }));

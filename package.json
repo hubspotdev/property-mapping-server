@@ -12,7 +12,8 @@
     "lint": "eslint",
     "format": "prettier --write ./src",
     "test": "jest",
-    "test:watch": "jest --watch"
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
   },
   "author": "",
   "license": "MIT",
@@ -54,35 +55,5 @@
   },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"
-  },
-  "jest": {
-    "preset": "ts-jest",
-    "testEnvironment": "node",
-    "moduleFileExtensions": [
-      "ts",
-      "tsx",
-      "js",
-      "jsx",
-      "json",
-      "node"
-    ],
-    "transform": {
-      "^.+\\.(ts|tsx)$": ["ts-jest", {
-        "tsconfig": "tsconfig.json"
-      }]
-    },
-    "roots": ["<rootDir>/src"],
-    "testPathIgnorePatterns": ["/node_modules/", "/dist/"],
-    "globals": {
-      "ts-jest": {
-        "isolatedModules": true
-      }
-    },
-    "testMatch": [
-      "**/*.test.ts"
-    ],
-    "setupFiles": [
-      "dotenv/config"
-    ]
   }
 }
