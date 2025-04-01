@@ -8,6 +8,7 @@ A Node.js server that manages property mappings between native systems and HubSp
 - [Getting started with the project](#getting-started-with-the-project)
   - [Setup](#setup)
   - [Scopes](#scopes)
+- [Docker Setup](#docker-setup)
 - [Endpoints](#endpoints)
   - [Authentication Endpoints](#authentication-endpoints)
   - [Properties Endpoints](#properties-endpoints)
@@ -57,6 +58,49 @@ For the client-side interface, please refer to the [React frontend repository](h
 7. Optional: Run `npm run seed` to seed the database with test data
 8. Run `npm run dev` to start the server
 9. Visit `http://localhost:3001/api/install` in a browser to get the OAuth install link, note, this is normally handled by the [React frontend repository](https://github.com/hubspotdev/property-mapping-client) so you will be redirected to non-existant location if that's not running.
+
+## Docker Setup
+
+### Prerequisites
+- [Docker](https://docs.docker.com/get-docker/)
+- [Docker Compose](https://docs.docker.com/compose/install/)
+
+### Running with Docker Compose
+1. Make sure Docker and Docker Compose are installed on your system
+2. Create a `.env` file in the project root with the following variables:
+   ```
+   CLIENT_ID=your-hubspot-client-id
+   CLIENT_SECRET=your-hubspot-client-secret
+   ```
+3. Build and start the containers:
+   ```
+   docker-compose up -d
+   ```
+4. Initialize the database:
+   ```
+   docker-compose exec app npx prisma db push
+   ```
+5. Optional: Seed the database:
+   ```
+   docker-compose exec app npx prisma db seed
+   ```
+6. The application is now running at http://localhost:3000
+
+### Building the Docker Image Separately
+If you want to build the Docker image without using Docker Compose:
+```
+docker build -t property-mappings-server .
+```
+
+### Running the Container Separately
+```
+docker run -p 3000:3000 \
+  -e DATABASE_URL=postgresql://postgres:postgres@db:5432/property_mappings \
+  -e CLIENT_ID=your-hubspot-client-id \
+  -e CLIENT_SECRET=your-hubspot-client-secret \
+  -e NODE_ENV=production \
+  property-mappings-server
+```
 
 ## Scopes
 

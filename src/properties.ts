@@ -5,7 +5,7 @@ import {
   HubSpotPropertiesCache,
   Prisma,
 } from "@prisma/client";
-import { setAccessToken } from "./auth";
+import { authenticateHubspotClient } from "./auth";
 
 import prisma from "../prisma/seed";
 import { hubspotClient } from "./auth";
