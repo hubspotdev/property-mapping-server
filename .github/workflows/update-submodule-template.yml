@@ -27,7 +27,7 @@ jobs:
             const response = await github.rest.repos.getContent({
               owner: 'hubspotdev',
               repo: 'CODE-Hub',
-              path: '.github/pull_request_template.md',
+              path: 'PR-Template.md',
               ref: 'main'
             });
 
@@ -46,8 +46,11 @@ jobs:
             const response = await github.rest.repos.getContent({
               owner: 'hubspotdev',
               repo: 'CODE-Hub',
-              path: 'Bug-Issue-Template.md',
-              ref: 'main'
+              path: 'PR-Template.md',
+              ref: 'main',
+              headers: {
+                Authorization: `token ${{ secrets.GITHUB_TOKEN }}`
+              }
             });
 
             const content = Buffer.from(response.data.content, 'base64').toString();
