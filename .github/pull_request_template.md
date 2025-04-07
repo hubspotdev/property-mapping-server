@@ -4,7 +4,7 @@ Please include a summary of the changes and the related issue. Please also inclu
 
 Fixes # (Tag or link relevant issues)
 
-## Type of change
+## Type of Change
 
 Please delete options that are not relevant.
 
