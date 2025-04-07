@@ -45,7 +45,6 @@ jobs:
               // Write the content
               const fs = require('fs');
               fs.writeFileSync('.github/pull_request_template.md', response.data);
-              fs.writeFileSync('.github/PULL_REQUEST_TEMPLATE.md', response.data);
 
               console.log('Successfully wrote template files');
             } catch (error) {
