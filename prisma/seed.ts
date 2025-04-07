@@ -1,12 +1,9 @@
 import { PrismaClient } from "@prisma/client";
 import handleError from '../src/utils/error';
 
-//Should be refactored to a single PrismaClient instance
 const prisma = new PrismaClient({
   log: ['info', 'warn', 'error'],
 });
-
-// Skip seeding if we're in test environment
 
 async function main(): Promise<void> {
   if (process.env.NODE_ENV === 'test') {

@@ -76,7 +76,7 @@ export const createPropertyGroupForContacts = async (accessToken: string) => {
     type: "HubSpot",
     logMessage: { message: "Creating contact property group..." },
   });
-  await setAccessToken();
+  await authenticateHubspotClient();
   try {
     const propertyGroupCreateResponse =
       await hubspotClient.crm.properties.groupsApi.create("contact", {
@@ -98,7 +98,7 @@ export const createPropertyGroupForCompanies = async (accessToken: string) => {
     type: "HubSpot",
     logMessage: { message: "Creating company property group..." },
   });
-  await setAccessToken();
+  await authenticateHubspotClient();
   try {
     const propertyGroupCreateResponse =
       await hubspotClient.crm.properties.groupsApi.create("company", {
@@ -123,7 +123,7 @@ export const createRequiredContactProperty = async (accessToken: string) => {
     type: "HubSpot",
     logMessage: { message: "Creating required contact property..." },
   });
-  await setAccessToken();
+  await authenticateHubspotClient();
   try {
     const propertyCreateResponse =
       await hubspotClient.crm.properties.coreApi.create("contact", {
@@ -151,7 +151,7 @@ export const createContactIdProperty = async (accessToken: string) => {
     type: "HubSpot",
     logMessage: { message: "Creating custom contact ID property..." },
   });
-  await setAccessToken();
+  await authenticateHubspotClient();
   try {
     const propertyCreateResponse =
       await hubspotClient.crm.properties.coreApi.create("contact", {
@@ -181,7 +181,7 @@ export const createCompanyIdProperty = async (accessToken: string) => {
     type: "HubSpot",
     logMessage: { message: "Creating custom company ID property..." },
   });
-  await setAccessToken();
+  await authenticateHubspotClient();
   try {
     const propertyCreateResponse =
       await hubspotClient.crm.properties.coreApi.create("company", {
@@ -258,7 +258,7 @@ export const getHubSpotProperties = async (
 ): Promise<{ contactProperties: any; companyProperties: any } | undefined> => {
   // const propertiesCacheIsValid = await checkPropertiesCache(customerId);
 
-  await setAccessToken();
+  await authenticateHubspotClient();
 
   // add DB call to check if we've looked in the last 5 minutes
   // https://www.prisma.io/docs/reference/api-reference/prisma-schema-reference#updatedat
@@ -321,7 +321,6 @@ export const createNativeProperty = async (
   customerId: string,
   data: Properties,
 ) => {
-  console.log("data", data);
   const createPropertyResponse = await prisma.properties.create({
     data: {
       ...data,
@@ -348,7 +347,7 @@ export const checkForPropertyOrGroup = async (
     type: "HubSpot",
     logMessage: { message: `Checking for ${objectType} ${isGroupString} ${propertyName}` }
   });
-  await setAccessToken();
+  await authenticateHubspotClient();
   try{
     if ( propertyOrGroup == 'property' ){
       getPropertyResponse = await hubspotClient.crm.properties.coreApi.getByNameWithHttpInfo(objectType, propertyName);

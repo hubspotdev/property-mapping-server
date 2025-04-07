@@ -168,7 +168,6 @@ const getAccessToken = async (customerId: string): Promise<string | void> => {
     console.log('Current Creds info')
     console.log(currentCreds)
     console.log(typeof currentCreds)
-    console.log('===============')
     if(!currentCreds){
       return "missing" // considering throwing an error here intead of a string that you have to know what it means
     }
@@ -196,17 +195,30 @@ const getAccessToken = async (customerId: string): Promise<string | void> => {
     );
   }
 };
-async function setAccessToken(): Promise<Client> {
+
+function applyHubSpotAccessToken(accessToken: string): Client {
   try {
-    const accessToken = await getAccessToken(getCustomerId());
-    if (!accessToken) {
-      throw new Error('No access token returned');
-    }
     hubspotClient.setAccessToken(accessToken);
     return hubspotClient;
   } catch (error) {
-    handleError(error, 'Error setting access token');
-    throw new Error('Failed to authenticate HubSpot client');
+    handleError(error, 'Error setting HubSpot access token');
+    throw new Error(`Failed to apply access token: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+}
+
+async function authenticateHubspotClient(): Promise<Client> {
+  try {
+    const customerId = getCustomerId();
+    const accessToken = await getAccessToken(customerId);
+    if (!accessToken) {
+      throw new Error(`No access token returned for customer ID: ${customerId}`);
+    }
+    return applyHubSpotAccessToken(accessToken);
+  } catch (error) {
+    handleError(error, 'Error retrieving HubSpot access token');
+    throw error instanceof Error
+      ? new Error(`Failed to authenticate HubSpot client: ${error.message}`)
+      : new Error('Failed to authenticate HubSpot client due to an unknown error');
   }
 }
 
@@ -217,5 +229,5 @@ export {
   getAccessToken,
   prisma,
   hubspotClient,
-  setAccessToken,
+  authenticateHubspotClient,
 };

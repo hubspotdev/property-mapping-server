@@ -1,9 +1,9 @@
 import request from 'supertest';
-import app from '../app';
-import { authUrl, redeemCode } from '../auth';
-import * as properties from '../properties';
-import * as mappings from '../mappings';
-import * as utils from '../utils/utils';
+import app from '../src/app';
+import { authUrl, redeemCode } from '../src/auth';
+import * as properties from '../src/properties';
+import * as mappings from '../src/mappings';
+import * as utils from '../src/utils/utils';
 import { describe, beforeEach, it, expect, jest } from '@jest/globals';
 import { afterAll, beforeAll } from '@jest/globals';
 
@@ -25,12 +25,12 @@ const Direction = {
 } as const;
 
 // Mock the modules
-jest.mock('../auth', () => ({
+jest.mock('../src/auth', () => ({
   authUrl: 'mock-auth-url',
   redeemCode: jest.fn()
 }));
 
-jest.mock('../properties', () => ({
+jest.mock('../src/properties', () => ({
   checkForPropertyOrGroup: jest.fn(),
   getHubSpotProperties: jest.fn(),
   convertToPropertyForDB: jest.fn(),
@@ -40,16 +40,16 @@ jest.mock('../properties', () => ({
   })
 }));
 
-jest.mock('../mappings', () => ({
+jest.mock('../src/mappings', () => ({
   saveMapping: jest.fn(),
   deleteMapping: jest.fn()
 }));
 
-jest.mock('../utils/utils', () => ({
+jest.mock('../src/utils/utils', () => ({
   getCustomerId: jest.fn()
 }));
 
-jest.mock('../utils/logger');
+jest.mock('../src/utils/logger');
 
 describe('API Endpoints', () => {
   // Setup and teardown
