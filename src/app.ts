@@ -19,7 +19,7 @@ import { saveMapping, getMappings, deleteMapping } from "./mappings";
 import { PORT, getCustomerId } from "./utils/utils";
 import { Mapping, Properties } from "@prisma/client";
 import handleError from "./utils/error";
-import { PropertyUpdate } from '@hubspot/api-client/lib/codegen/crm/properties';
+// import { PropertyUpdate } from '@hubspot/api-client/lib/codegen/crm/properties';
 import swaggerUi from 'swagger-ui-express';
 import swaggerJsdoc from 'swagger-jsdoc';
 import { swaggerOptions } from './config/swagger';

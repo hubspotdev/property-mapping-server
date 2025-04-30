@@ -6,7 +6,7 @@ async function shutdown(): Promise<void> {
     console.log("Initiating graceful shutdown...");
 
     const closeServerPromise = new Promise<void>((resolve, reject) => {
-      server.close((err) => {
+      server.close((err:unknown) => {
         console.log("Server close callback called.");
         if (err) {
           console.error("Error closing the server:", err);
@@ -28,17 +28,17 @@ async function shutdown(): Promise<void> {
         .then(() => {
           console.log("HTTP server closed successfully.");
         })
-        .catch((err) => {
+        .catch((err:unknown) => {
           console.error("Error during server close:", err);
         }),
-      disconnectPrisma().catch((err) =>
+      disconnectPrisma().catch((err:unknown) =>
         console.error("Error during Prisma disconnection:", err),
       ),
     ]);
 
     console.log("Graceful shutdown complete.");
     process.exit(0);
-  } catch (err) {
+  } catch (err:unknown) {
     console.error("Error during shutdown:", err);
     process.exit(1);
   }

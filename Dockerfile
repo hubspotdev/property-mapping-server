@@ -23,10 +23,15 @@ RUN apt-get update && apt-get install -y \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
+# Install ts-node and typescript globally in production
+RUN npm install -g ts-node typescript
+
 # Copy necessary files from build stage
 COPY --from=build /app/dist ./dist
+COPY --from=build /app/src ./src
 COPY --from=build /app/package*.json ./
 COPY --from=build /app/prisma ./prisma
+COPY --from=build /app/tsconfig.json ./
 COPY docker-entrypoint.sh ./
 
 # Install production dependencies only

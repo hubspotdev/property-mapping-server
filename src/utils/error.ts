@@ -2,38 +2,39 @@ import { logger } from "./logger";
 import shutdown from "./shutdown";
 import { LogObject } from "../types/common";
 
-function isHubSpotApiError(error: any): boolean {
+function isHubSpotApiError(error: unknown): boolean {
   // Check for presence of typical HubSpot headers
   const hasHubspotHeaders =
-    error.headers &&
-    ("x-hubspot-correlation-id" in error.headers ||
-      "x-hubspot-ratelimit-max" in error.headers);
+    typeof (error as any).headers === 'object' &&
+    ("x-hubspot-correlation-id" in (error as any).headers ||
+      "x-hubspot-ratelimit-max" in (error as any).headers);
 
   // Check for presence of HubSpot-specific fields in the error body
   const hasHubspotFields =
-    error.body &&
-    error.body.status === "error" &&
-    typeof error.body.correlationId === "string" &&
-    typeof error.body.groupsErrorCode === "string";
+    typeof (error as any).body === 'object' &&
+    (error as any).body?.status === "error" &&
+    typeof (error as any).body?.correlationId === "string" &&
+    typeof (error as any).body?.groupsErrorCode === "string";
 
   return (
     hasHubspotHeaders ||
     hasHubspotFields ||
     Boolean(
-      error?.message?.includes("hubapi") ||
-        error?.logMessage?.message?.body.includes("hubspot-correlation-id"),
+      (error as any)?.message?.includes("hubapi") ||
+        (error as any)?.logMessage?.message?.body?.includes("hubspot-correlation-id"),
     )
   );
 }
 
-function isGeneralPrismaError(error: any): boolean {
-  return (
-    error?.stack?.includes("@prisma/client") ||
-    error?.message?.includes("prisma")
+function isGeneralPrismaError(error: unknown): boolean {
+  const errorObj = error as { stack?: string; message?: string };
+  return Boolean(
+    errorObj.stack?.includes("@prisma/client") ||
+    errorObj.message?.includes("prisma")
   );
 }
 
-function formatError(logMessage: any, context: string = ""): any {
+function formatError(logMessage: any, context: string = "") {
   const error: LogObject = { logMessage, context };
   if (!error.type) {
     if (isGeneralPrismaError(logMessage)) {
@@ -50,7 +51,7 @@ function formatError(logMessage: any, context: string = ""): any {
 }
 
 function handleError(
-  error: any,
+  error: unknown,
   context: string = "",
   critical: boolean = false,
 ): void {

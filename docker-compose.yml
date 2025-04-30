@@ -10,12 +10,13 @@ services:
       db:
         condition: service_healthy
     environment:
-      - DATABASE_URL=${DATABASE_URL}
+      - DATABASE_URL=postgresql://zradford:zradford@db:5432/docker-test-property
       - NODE_ENV=production
       - SEED_DB=true
-      - POSTGRES_USER=zradford
-      - POSTGRES_PASSWORD=zradford
-      - POSTGRES_DB=docker-test-property
+      - PGUSER=zradford
+      - PGPASSWORD=zradford
+      - PGDATABASE=docker-test-property
+      - PGHOST=db
       - CLIENT_ID=${CLIENT_ID}
       - CLIENT_SECRET=${CLIENT_SECRET}
     volumes:
@@ -35,16 +36,20 @@ services:
     ports:
       - "5432:5432"
     environment:
-      - POSTGRES_DB=property_mappings
+      - POSTGRES_DB=docker-test-property
       - POSTGRES_USER=zradford
       - POSTGRES_PASSWORD=zradford
+      - PGUSER=zradford
+      - PGPASSWORD=zradford
+      - PGDATABASE=docker-test-property
+      - PGHOST=db
     volumes:
       - postgres-data:/var/lib/postgresql/data
     networks:
       - app-network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d property_mappings"]
+      test: ["CMD-SHELL", "pg_isready -U zradford -d docker-test-property"]
       interval: 5s
       timeout: 5s
       retries: 5
