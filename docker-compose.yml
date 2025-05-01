@@ -25,7 +25,7 @@ services:
       - app-network
     restart: on-failure
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000 || exit 0"]
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/install || exit 0"]
       interval: 30s
       timeout: 10s
       retries: 3

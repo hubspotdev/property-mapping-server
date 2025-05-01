@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "nodemon src/app.ts",
-    "prod": "node app/dist/app.js",
+    "prod": "node dist/src/app.js",
     "build": "tsc",
     "seed": "npx prisma db seed",
     "db-init": "npx prisma db push",
