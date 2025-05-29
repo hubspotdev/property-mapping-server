@@ -5,10 +5,12 @@ import {
   HubSpotPropertiesCache,
   Prisma,
 } from "@prisma/client";
-import { setAccessToken } from "./auth";
+import { authenticateHubspotClient } from "./auth";
+
+
 
 import prisma from "../prisma/seed";
-import { hubspotClient } from "./auth";
+import { hubspotClient } from "./clients";
 
 import { Request } from "express";
 
@@ -40,6 +42,10 @@ const objectTypeConversionTable: objectConversionTable = {
   companies: Objects.Company,
 };
 
+/**
+ * Converts request body data to a Properties object for database storage
+ * Returns Properties object ready for database insertion
+ */
 export const convertToPropertyForDB = (
   requestBody: Request["body"],
   customerId: string,
@@ -71,6 +77,9 @@ export const convertToPropertyForDB = (
   return newPropertyInfo;
 };
 
+/**
+ * Creates a property group for contacts in HubSpot
+ */
 export const createPropertyGroupForContacts = async (accessToken: string) => {
   logger.info({
     type: "HubSpot",
@@ -89,10 +98,18 @@ export const createPropertyGroupForContacts = async (accessToken: string) => {
       logMessage: { message: "Contact property group created!" },
     });
   } catch (error) {
-    handleError(error, "There was an issue while creating the property group ");
+    handleError(
+      error,
+      "There was an issue while creating the contact property group",
+      false
+    );
+    throw error;
   }
 };
 
+/**
+ * Creates a property group for companies in HubSpot
+ */
 export const createPropertyGroupForCompanies = async (accessToken: string) => {
   logger.info({
     type: "HubSpot",
@@ -110,14 +127,19 @@ export const createPropertyGroupForCompanies = async (accessToken: string) => {
       type: "HubSpot",
       logMessage: { message: "Company property group created!" },
     });
-  } catch (error: unknown) {
+  } catch (error) {
     handleError(
       error,
       "There was an issue while creating the company property group",
+      false
     );
+    throw error;
   }
 };
 
+/**
+ * Creates a required contact property in HubSpot
+ */
 export const createRequiredContactProperty = async (accessToken: string) => {
   logger.info({
     type: "HubSpot",
@@ -141,11 +163,16 @@ export const createRequiredContactProperty = async (accessToken: string) => {
   } catch (error) {
     handleError(
       error,
-      "There was an issue while creating a property that is required for this integration ",
+      "There was an issue while creating the required contact property",
+      false
     );
+    throw error;
   }
 };
 
+/**
+ * Creates a unique identifier property for contacts in HubSpot
+ */
 export const createContactIdProperty = async (accessToken: string) => {
   logger.info({
     type: "HubSpot",
@@ -168,14 +195,19 @@ export const createContactIdProperty = async (accessToken: string) => {
       type: "HubSpot",
       logMessage: { message: "Custom contact ID property created!" },
     });
-  } catch (error: unknown) {
+  } catch (error) {
     handleError(
       error,
-      "There was an issue creating the custom contact ID property",
+      "There was an issue while creating the contact ID property",
+      false
     );
+    throw error;
   }
 };
 
+/**
+ * Creates a unique identifier property for companies in HubSpot
+ */
 export const createCompanyIdProperty = async (accessToken: string) => {
   logger.info({
     type: "HubSpot",
@@ -198,14 +230,19 @@ export const createCompanyIdProperty = async (accessToken: string) => {
       type: "HubSpot",
       logMessage: { message: "Custom company ID property created!" },
     });
-  } catch (error: unknown) {
+  } catch (error) {
     handleError(
       error,
-      "There was an issue creating the custom company ID property",
+      "There was an issue while creating the company ID property",
+      false
     );
+    throw error;
   }
 };
 
+/**
+ * Checks if the properties cache is valid for a given customer
+ */
 const checkPropertiesCache = async (
   customerId: string,
 ): Promise<PropertyCache | undefined> => {
@@ -224,11 +261,17 @@ const checkPropertiesCache = async (
   } catch (error) {
     handleError(
       error,
-      "There was an issue while attempting to check the properties cache ",
+      "There was an issue while checking the properties cache",
+      false
     );
+    throw error;
   }
 };
 
+/**
+ * Saves HubSpot properties to the cache
+ * Returns the cached data
+ */
 const saveHubSpotPropertiesToCache = async (
   customerId: string,
   propertyData: any,
@@ -242,23 +285,33 @@ const saveHubSpotPropertiesToCache = async (
         propertyData,
       },
     });
-    console.log(results);
     return results;
   } catch (error) {
     handleError(
       error,
-      "There was an issue while attempting to save Hubspot properties to the cache ",
+      "There was an issue while saving HubSpot properties to cache",
+      false
     );
+    throw error;
   }
 };
 
+/**
+ * Retrieves HubSpot properties for a customer
+ * skipCache - Whether to skip the cache and fetch fresh data
+ * Returns HubSpot properties for contacts and companies
+ */
 export const getHubSpotProperties = async (
   customerId: string,
   skipCache: boolean,
-): Promise<{ contactProperties: any; companyProperties: any } | undefined> => {
-  // const propertiesCacheIsValid = await checkPropertiesCache(customerId);
+): Promise<{ contactProperties: any; companyProperties: any } | null> => {
+  const client = await authenticateHubspotClient();
 
-  await authenticateHubspotClient();
+  if (!client) {
+    return null;
+  }
+
+  // const propertiesCacheIsValid = await checkPropertiesCache(customerId);
 
   // add DB call to check if we've looked in the last 5 minutes
   // https://www.prisma.io/docs/reference/api-reference/prisma-schema-reference#updatedat
@@ -282,8 +335,10 @@ export const getHubSpotProperties = async (
     } catch (error) {
       handleError(
         error,
-        "There was an issue while attempting to get Hubspot properties ",
+        "There was an issue while getting HubSpot properties",
+        false
       );
+      throw error;
     }
   } else {
     return cacheResults?.propertyData;
@@ -312,8 +367,10 @@ export const getNativeProperties = async (
   } catch (error) {
     handleError(
       error,
-      "There was an issue while attempting to get the native properties ",
+      "There was an issue while getting native properties",
+      false
     );
+    throw error;
   }
 };
 
@@ -333,7 +390,10 @@ export const createNativeProperty = async (
   return createPropertyResponse;
 };
 
-// Check for an existing property or property group
+/**
+ * Checks if a property or property group exists in HubSpot
+ * Returns Boolean indicating if the property/group exists
+ */
 export const checkForPropertyOrGroup = async (
   accessToken: string,
   objectType: string,
@@ -343,15 +403,16 @@ export const checkForPropertyOrGroup = async (
   let propertyOrGroupExists: boolean = false;
   const isGroupString: string = propertyOrGroup == 'group' ? 'property group' : 'property';
   let getPropertyResponse: any;
+
   logger.info({
     type: "HubSpot",
     logMessage: { message: `Checking for ${objectType} ${isGroupString} ${propertyName}` }
   });
-  await authenticateHubspotClient();
-  try{
-    if ( propertyOrGroup == 'property' ){
+
+  try {
+    if (propertyOrGroup == 'property') {
       getPropertyResponse = await hubspotClient.crm.properties.coreApi.getByNameWithHttpInfo(objectType, propertyName);
-    } else if ( propertyOrGroup == 'group' ){
+    } else if (propertyOrGroup == 'group') {
       getPropertyResponse = await hubspotClient.crm.properties.groupsApi.getByNameWithHttpInfo(objectType, propertyName);
     } else {
       throw new Error(`Invalid schema type provided: ${propertyOrGroup}`);
@@ -369,24 +430,76 @@ export const checkForPropertyOrGroup = async (
       logger.info({
         type: "HubSpot",
         logMessage: { message: `${objectType} ${isGroupString} ${propertyName} already exists, skipping...` }
-      })
+      });
     } else {
-      // Handle other unexpected errors
       logger.info({
         type: "HubSpot",
-        logMessage: { message: `Unkown response code for ${objectType} ${isGroupString} ${propertyName}` }
-      })
+        logMessage: { message: `Unknown response code for ${objectType} ${isGroupString} ${propertyName}` }
+      });
     }
-  } catch(error:unknown) {
-    // The current client throws a 404 error so we need to catch errors and check for the 404 code
+  } catch (error) {
     const errorCode: any = (error instanceof Error && "code" in error) ? error?.code : error;
     if (errorCode == 404) {
       // 404: property or group doesn't exist, and we should create it
       propertyOrGroupExists = false;
     } else {
-      // Handle other unexpected errors
-      handleError(error);
+      handleError(
+        error,
+        `There was an issue while checking for ${objectType} ${isGroupString} ${propertyName}`,
+        false
+      );
+      throw error;
     }
   }
   return propertyOrGroupExists;
+};
+
+/**
+ * Sets up all required properties for the integration
+ * accessToken - The HubSpot access token
+ */
+export const setupRequiredProperties = async (accessToken: string): Promise<void> => {
+  try {
+    // Check and create property groups in parallel
+    const [contactGroupExists, companiesGroupExists] = await Promise.all([
+      checkForPropertyOrGroup(accessToken, 'contacts', 'integration_properties', 'group'),
+      checkForPropertyOrGroup(accessToken, 'companies', 'integration_properties', 'group')
+    ]);
+
+    // Create property groups if they don't exist
+    await Promise.all([
+      !contactGroupExists && createPropertyGroupForContacts(accessToken),
+      !companiesGroupExists && createPropertyGroupForCompanies(accessToken)
+    ]);
+
+    // Check and create required properties in parallel
+    const [
+      requiredContactPropertyExists,
+      contactIdPropertyExists,
+      companyIdPropertyExists
+    ] = await Promise.all([
+      checkForPropertyOrGroup(accessToken, 'contacts', 'example_required', 'property'),
+      checkForPropertyOrGroup(accessToken, 'contacts', 'native_system_contact_identifier', 'property'),
+      checkForPropertyOrGroup(accessToken, 'companies', 'native_system_company_identifier', 'property')
+    ]);
+
+    // Create properties if they don't exist
+    await Promise.all([
+      !requiredContactPropertyExists && createRequiredContactProperty(accessToken),
+      !contactIdPropertyExists && createContactIdProperty(accessToken),
+      !companyIdPropertyExists && createCompanyIdProperty(accessToken)
+    ]);
+
+    logger.info({
+      type: "HubSpot",
+      logMessage: { message: "Successfully setup all required properties" }
+    });
+  } catch (error) {
+    handleError(
+      error,
+      "There was an issue while setting up required properties",
+      false // not critical, as we want to continue even if property setup fails
+    );
+    throw error; // Re-throw the error to be handled by the caller
+  }
 };

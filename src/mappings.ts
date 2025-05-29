@@ -2,6 +2,8 @@ import prisma from "../prisma/seed";
 import handleError from "./utils/error";
 import { getCustomerId } from "./utils/utils";
 import { Mapping } from "@prisma/client";
+import { logger } from "./utils/logger";
+
 const getMappings = async (
   customerId: string,
 ): Promise<Mapping[] | undefined> => {
@@ -21,10 +23,13 @@ const getMappings = async (
         customerId,
       },
     });
-    console.log(mappings);
+    logger.info({
+      type: "Mappings",
+      logMessage: { message: "Retrieved mappings", data: mappings }
+    });
     return mappings;
   } catch (error) {
-    handleError(error, "There was an issue while querying property mappings ");
+    handleError(error, "There was an issue while querying property mappings");
   }
 };
 
@@ -50,7 +55,10 @@ const deleteMapping = async (
 const saveMapping = async (
   maybeMapping: Mapping,
 ): Promise<Mapping | undefined> => {
-  console.log("maybeMapping", maybeMapping);
+  logger.info({
+    type: "Mappings",
+    logMessage: { message: "Attempting to save mapping", data: maybeMapping }
+  });
   const mappingName = maybeMapping.nativeName;
   const hubspotName = maybeMapping.hubspotName;
   const hubspotLabel = maybeMapping.hubspotLabel;
@@ -85,13 +93,8 @@ const saveMapping = async (
 
     return mappingResult;
   } catch (error) {
-    handleError(
-      error,
-      "There was an issue while attempting to save the property mapping ",
-    );
+    handleError(error, "There was an issue while attempting to save the property mapping");
   }
 };
-
-
 
 export { deleteMapping, getMappings, saveMapping };
