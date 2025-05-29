@@ -1,12 +1,20 @@
 import prismaSeed from '../prisma/seed';
+import { logger } from '../src/utils/logger';
+import handleError from '../src/utils/error';
 
 async function disconnectPrisma(): Promise<void> {
   try {
-    console.log('Disconnecting from the database...');
+    logger.info({
+      type: "Database",
+      logMessage: { message: "Disconnecting from the database..." }
+    });
     await prismaSeed.$disconnect();
-    console.log('Disconnected from the database successfully.');
+    logger.info({
+      type: "Database",
+      logMessage: { message: "Disconnected from the database successfully." }
+    });
   } catch (error) {
-    console.error('Error while disconnecting from the database:', error);
+    handleError(error, "Error while disconnecting from the database");
     throw error;
   }
 }

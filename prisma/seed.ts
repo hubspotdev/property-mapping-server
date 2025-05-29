@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import handleError from '../src/utils/error';
+import { logger } from '../src/utils/logger';
 
 const prisma = new PrismaClient({
   log: ['info', 'warn', 'error'],
@@ -7,7 +8,10 @@ const prisma = new PrismaClient({
 
 async function main(): Promise<void> {
   if (process.env.NODE_ENV === 'test') {
-    console.log('Skipping seed in test environment');
+    logger.info({
+      type: "Database",
+      logMessage: { message: "Skipping seed in test environment" }
+    });
     return;
   }
 
@@ -36,7 +40,10 @@ async function main(): Promise<void> {
   });
 
   if (process.env.NODE_ENV !== 'test') {
-    console.log(firstname);
+    logger.info({
+      type: "Database",
+      logMessage: { message: "Created firstname property", data: firstname }
+    });
   }
   const contactIdentifier = await prisma.properties.upsert({
     where: {
@@ -63,7 +70,10 @@ async function main(): Promise<void> {
   });
 
   if (process.env.NODE_ENV !== 'test') {
-    console.log(contactIdentifier);
+    logger.info({
+      type: "Database",
+      logMessage: { message: "Created native_system_contact_identifier property", data: contactIdentifier }
+    });
   }
 
   const lastname = await prisma.properties.upsert({
@@ -90,7 +100,10 @@ async function main(): Promise<void> {
   });
 
   if (process.env.NODE_ENV !== 'test') {
-    console.log(lastname);
+    logger.info({
+      type: "Database",
+      logMessage: { message: "Created lastname property", data: lastname }
+    });
   }
   const exampleCustom = await prisma.properties.upsert({
     where: {
@@ -116,7 +129,10 @@ async function main(): Promise<void> {
   });
 
   if (process.env.NODE_ENV !== 'test') {
-    console.log(exampleCustom);
+    logger.info({
+      type: "Database",
+      logMessage: { message: "Created example_custom property", data: exampleCustom }
+    });
   }
   const exampleRequired = await prisma.properties.upsert({
     where: {
@@ -142,7 +158,10 @@ async function main(): Promise<void> {
   });
 
   if (process.env.NODE_ENV !== 'test') {
-    console.log(exampleRequired);
+    logger.info({
+      type: "Database",
+      logMessage: { message: "Created example_required property", data: exampleRequired }
+    });
   }
   const companyIdentifier = await prisma.properties.upsert({
     where: {
@@ -169,7 +188,10 @@ async function main(): Promise<void> {
   });
 
   if (process.env.NODE_ENV !== 'test') {
-    console.log(companyIdentifier);
+    logger.info({
+      type: "Database",
+      logMessage: { message: "Created native_system_company_identifier property", data: companyIdentifier }
+    });
   }
   const customCompany = await prisma.properties.upsert({
     where: {
@@ -195,7 +217,10 @@ async function main(): Promise<void> {
   });
 
   if (process.env.NODE_ENV !== 'test') {
-    console.log(customCompany);
+    logger.info({
+      type: "Database",
+      logMessage: { message: "Created example_custom_company property", data: customCompany }
+    });
   }
   const companyName = await prisma.properties.upsert({
     where: {
@@ -221,7 +246,10 @@ async function main(): Promise<void> {
   });
 
   if (process.env.NODE_ENV !== 'test') {
-    console.log(companyName);
+    logger.info({
+      type: "Database",
+      logMessage: { message: "Created company_name property", data: companyName }
+    });
   }
   const industry = await prisma.properties.upsert({
     where: {
@@ -247,7 +275,10 @@ async function main(): Promise<void> {
   });
 
   if (process.env.NODE_ENV !== 'test') {
-    console.log(industry);
+    logger.info({
+      type: "Database",
+      logMessage: { message: "Created industry property", data: industry }
+    });
   }
   const num_employees = await prisma.properties.upsert({
     where: {
@@ -273,7 +304,10 @@ async function main(): Promise<void> {
   });
 
   if (process.env.NODE_ENV !== 'test') {
-    console.log(num_employees);
+    logger.info({
+      type: "Database",
+      logMessage: { message: "Created num_employees property", data: num_employees }
+    });
   }
 }
 
