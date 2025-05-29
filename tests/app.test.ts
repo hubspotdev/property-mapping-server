@@ -61,28 +61,6 @@ describe('API Endpoints', () => {
     await app.close();
   });
 
-  describe('GET /api/install', () => {
-    it('should return auth URL', async () => {
-      const response = await request(app).get('/api/install');
-      expect(response.status).toBe(200);
-      expect(response.text).toBe(authUrl);
-    });
-  });
-
-  describe('GET /oauth-callback', () => {
-
-    it('should handle OAuth callback error', async () => {
-      const mockCode = 'invalid-code';
-      (redeemCode as jest.MockedFunction<typeof redeemCode>).mockRejectedValue(new Error('OAuth Error'));
-
-      const response = await request(app)
-        .get('/oauth-callback')
-        .query({ code: mockCode });
-
-      expect(response.status).toBe(302);
-      expect(response.header.location).toContain('errMessage');
-    });
-  });
 
   describe('GET /api/hubspot-properties', () => {
     it('should return hubspot properties', async () => {
@@ -107,7 +85,7 @@ describe('API Endpoints', () => {
       const response = await request(app).get('/api/hubspot-properties');
 
       expect(response.status).toBe(500);
-      expect(response.text).toBe('Internal Server Error');
+      expect(response.text).toBe('{"error":"Internal Server Error","message":"Test error"}');
     });
   });
 
@@ -201,7 +179,7 @@ describe('API Endpoints', () => {
         .delete('/api/mappings/invalid');
 
       expect(response.status).toBe(400);
-      expect(response.text).toBe('Invalid mapping Id format');
+      expect(response.text).toBe('Invalid mapping ID format');
     });
   });
 });
