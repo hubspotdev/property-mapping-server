@@ -25,12 +25,29 @@ A Node.js server that manages property mappings between native systems and HubSp
 This project is an Express.js application designed to integrate with HubSpot's API, facilitating the management and synchronization of properties and mappings between a native system and HubSpot.
 For the client-side interface, please refer to the [React frontend repository](https://github.com/hubspotdev/property-mapping-client) which works in conjunction with this backend application.
 
-**Key concepts**:
-- Properties in HubSpot refer to the fields that store information about CRM objects (contacts, companies, etc.). For instance, a contact can have properties like "First Name", "Last Name", or custom properties specific to your business needs.
+### Key Concepts
 
-- Property mapping refers to the configuration process where users set up the rules or criteria that define how properties from their native system should map to HubSpot properties. This ensures data consistency when syncing between systems.
+#### Properties
+Properties in HubSpot are fields that store information about CRM objects (contacts, companies, etc.). For instance, a contact can have properties like "First Name", "Last Name", or custom properties specific to your business needs.-Property definition involves specifying the nature and characteristics of the property, such as its type (string, number, etc.), whether it's required, and any validation rules.:
 
-- Property definition involves specifying the nature and characteristics of the property, such as its type (string, number, etc.), whether it's required, and any validation rules.
+- **Name**: Unique identifier for the property
+- **Label**: Display name shown in the HubSpot interface
+- **Type**: Data type of the property (String, Number, Option)
+- **Object**: The CRM object it belongs to (Contact or Company)
+- **Unique**: Whether the property should have unique values
+- **CustomerId**: Identifier for the customer who owns the property
+- **ModificationMetadata**: Information about when and who modified the property
+
+#### Property Mappings
+Property mapping refers to the configuration process where users set up the rules or criteria that define how properties from their native system should map to HubSpot properties. This ensures data consistency when syncing between systems.:
+
+- **NativeName**: Name of the property in your native system
+- **HubspotName**: Name of the corresponding HubSpot property
+- **HubspotLabel**: Display label for the HubSpot property
+- **Object**: Type of object (Contact or Company)
+- **Direction**: Data flow direction (toHubSpot, toNative, or biDirectional)
+- **CustomerId**: Identifier for the customer who owns the mapping
+- **ModificationMetadata**: Information about when and who modified the mapping
 
 ## Why is this project useful
 
@@ -40,38 +57,40 @@ For the client-side interface, please refer to the [React frontend repository](h
   - Caching HubSpot property definitions to reduce API calls
   - Validating property types and formats
   - Handling bidirectional updates between systems
+- **Performance Optimization**: Implements caching to reduce API calls to HubSpot
+- **Type Safety**: Ensures data integrity through TypeScript and proper validation
 
 ## Getting started with the project:
 
 ### Setup:
 
-1. Download and install [PostgreSQL](https://www.postgresql.org/download/), make sure it's running, and create an empty database. You need the username and password (defaults username is postgres and no password)
-2. Clone the repo
-3. In your [HubSpot public app](https://developers.hubspot.com/docs/api/creating-an-app), add `localhost:3001/oauth-callback` as a redirect URL, set the required scopes to be those in the [Scopes](#scopes) section down below
-4. Create the .env file with these entries (see examples in the [.env.example](./.env.example) file):
-   - DATABASE_URL the (local) url to the postgres database (e.g. `postgresql://{username}:{password}@localhost:5432/{database name}`)
-   - CLIENT_ID from Hubspot public app
-   - CLIENT_SECRET from Hubspot public app
-5. Run `npm install` to install the required Node packages.
-6. Run `npm run db-init` to create the necessary tables in PostgreSQL
-7. Optional: Run `npm run seed` to seed the database with test data
-8. Run `npm run dev` to start the server
-9. Visit `http://localhost:3001/api/install` in a browser to get the OAuth install link, note, this is normally handled by the [React frontend repository](https://github.com/hubspotdev/property-mapping-client) so you will be redirected to non-existant location if that's not running.
+1. Clone the repo
 
-## Scopes
+2. If you haven't done so yet, please make sure to install [Docker](https://www.docker.com/get-started/) on your local environment.
 
-- `crm.schemas.companies.write` - Create, delete, or make changes to property settings for companies
-- `crm.schemas.contacts.write` - Create, delete, or make changes to property settings for contacts
-- `crm.schemas.companies.read` - View details about property settings for companies
-- `crm.schemas.contacts.read` - View details about property settings for contacts
+3. Create the .env file with these entries (see .env.example):
+   - DATABASE_URL - PostgreSQL connection string
+   - POSTGRES_USER - PostgreSQL username (default: postgres)
+   - POSTGRES_PASSWORD - PostgreSQL password (default: postgres)
+   - POSTGRES_DB - PostgreSQL database name (default: hubspot_sync)
+   - OAUTH_SERVICE_URL - URL of the external OAuth service
 
-## Endpoints:
+4. Ensure the OAuth service is running and accessible. The OAuth service must have the following HubSpot scopes configured for this application to function properly:
+   - `crm.schemas.companies.write` - Create, delete, or make changes to property settings for companies
+   - `crm.schemas.contacts.write` - Create, delete, or make changes to property settings for contacts
+   - `crm.schemas.companies.read` - View details about property settings for companies
+   - `crm.schemas.contacts.read` - View details about property settings for contacts
 
-### Authentication Endpoints
+5. Build and run the application:
+   ```bash
+   # For development:
+   docker-compose up --build
 
-- `GET /api/install`: Initiates the OAuth installation process and returns the authorization URL for HubSpot.
+   # For production:
+   docker-compose -f docker-compose.yml up --build
+   ```
 
-- `GET /oauth-callback`: Endpoint for handling HubSpot OAuth callback, processing the provided code to obtain an access token.
+### Endpoints:
 
 ### Properties Endpoints
 
@@ -89,35 +108,70 @@ For the client-side interface, please refer to the [React frontend repository](h
 
 - `DELETE /api/mappings/{mappingID}` Deletes a specified mapping by its ID.
 
-## Available Scripts
+#### API Documentation
 
-- `npm run dev` - Start development server with hot reload
-- `npm run prod` - Run production server
-- `npm run build` - Build TypeScript files
-- `npm run seed` - Seed the database with initial data
-- `npm run db-init` - Initialize database schema
-- `npm run lint` - Run ESLint
-- `npm run format` - Format code with Prettier
-- `npm test` - Run tests
-- `npm run test:watch` - Run tests in watch mode
+- `GET /api-docs`
+  - Swagger UI documentation for all endpoints
+  - Interactive API testing interface
 
-## Dependencies
 
-### Core
-- @prisma/client - Database ORM
-- express - Web framework
-- @hubspot/api-client - HubSpot API client
-- dotenv - Environment configuration
-- swagger-jsdoc/swagger-ui-express - API documentation
+### Available Scripts
 
-### Development
-- typescript - TypeScript compiler
-- prisma - Database toolkit
-- jest - Testing framework
-- nodemon - Development server
-- eslint/prettier - Code formatting and linting
-- ts-node - TypeScript execution
-- supertest - HTTP testing
+- `docker-compose up` - Start the application and database
+- `docker-compose down -v` - Stop the application and remove volumes
+- `docker-compose exec app npm run seed` - Seed the database
+- `docker-compose exec app npm test` - Run test suite
+- `docker-compose exec app npm run test:watch` - Run tests in watch mode
+- `docker-compose exec app npm run test:coverage` - Generate test coverage report
+
+### Dependencies
+
+All dependencies are automatically handled by Docker. However, for reference, here are the key packages used:
+
+#### Core Dependencies
+These are included in the Docker container:
+- @hubspot/api-client: ^12.0.1 - HubSpot API client
+- @prisma/client: ^5.21.0 - Database ORM
+- axios: ^1.7.7 - HTTP client
+- dotenv: ^16.4.5 - Environment configuration
+- express: ^4.21.1 - Web framework
+- form-data: ^4.0.1 - Form data handling
+- swagger-jsdoc: ^6.2.8 - API documentation generation
+- swagger-ui-express: ^5.0.1 - API documentation UI
+
+#### Development Dependencies
+These are also included in the Docker environment:
+- TypeScript and Node.js types
+  - typescript: ^4.0.0
+  - @types/node: ^22.7.5
+  - @types/express: ^5.0.0
+  - @types/jest: ^29.0.0
+  - @types/supertest: ^6.0.2
+  - @types/swagger-jsdoc: ^6.0.4
+  - @types/swagger-ui-express: ^4.1.7
+
+- Testing
+  - jest: ^29.0.0
+  - @jest/globals: ^29.0.0
+  - jest-mock-extended: ^3.0.7
+  - ts-jest: ^29.0.0
+  - supertest: ^6.3.4
+
+- Development tools
+  - nodemon: ^3.1.7 - Development server
+  - ts-node: ^10.9.2 - TypeScript execution
+  - prisma: ^5.21.0 - Database toolkit
+
+- Code quality
+  - eslint: ^9.12.0
+  - @eslint/js: ^9.12.0
+  - @typescript-eslint/eslint-plugin: ^8.10.0
+  - @typescript-eslint/parser: ^8.10.0
+  - eslint-config-prettier: ^9.1.0
+  - prettier: ^3.3.3
+  - prettier-plugin-prisma: ^5.0.0
+  - globals: ^15.11.0
+  - typescript-eslint: ^8.10.0
 
 ## Where to get help?
 
