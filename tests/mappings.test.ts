@@ -87,7 +87,7 @@ describe('Mappings Database Client', () => {
       expect(result).toBeUndefined();
       expect(handleError).toHaveBeenCalledWith(
         mockError,
-        'There was an issue while querying property mappings '
+        'There was an issue while querying property mappings'
       );
     });
   });
@@ -123,7 +123,7 @@ describe('Mappings Database Client', () => {
       expect(result).toBeUndefined();
       expect(handleError).toHaveBeenCalledWith(
         mockError,
-        'There was an issue while attempting to delete property mappings '
+        'There was an issue while attempting to delete property mappings'
       );
     });
   });
@@ -174,7 +174,7 @@ describe('Mappings Database Client', () => {
       expect(result).toBeUndefined();
       expect(handleError).toHaveBeenCalledWith(
         mockError,
-        'There was an issue while attempting to save the property mapping '
+        'There was an issue while attempting to save the property mapping'
       );
     });
   });

@@ -47,7 +47,7 @@ const deleteMapping = async (
   } catch (error) {
     handleError(
       error,
-      "There was an issue while attempting to delete property mappings ",
+      "There was an issue while attempting to delete property mappings",
     );
   }
 };
