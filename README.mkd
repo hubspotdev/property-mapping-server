@@ -28,15 +28,18 @@ For the client-side interface, please refer to the [React frontend repository](h
 ### Key Concepts
 
 #### Properties
-Properties in HubSpot are fields that store information about CRM objects (contacts, companies, etc.). For instance, a contact can have properties like "First Name", "Last Name", or custom properties specific to your business needs.-Property definition involves specifying the nature and characteristics of the property, such as its type (string, number, etc.), whether it's required, and any validation rules.:
+Properties in HubSpot are fields that store information about CRM objects (contacts, companies, etc.). For instance, a contact can have properties like "First Name", "Last Name", or custom properties specific to your business needs.
 
-- **Name**: Unique identifier for the property
-- **Label**: Display name shown in the HubSpot interface
-- **Type**: Data type of the property (String, Number, Option)
-- **Object**: The CRM object it belongs to (Contact or Company)
-- **Unique**: Whether the property should have unique values
-- **CustomerId**: Identifier for the customer who owns the property
-- **ModificationMetadata**: Information about when and who modified the property
+#### Property definition
+Property definition involves specifying the nature and characteristics of the property, such as its type (string, number, etc.), whether it's required, and any validation rules:
+
+  - **Name**: Unique identifier for the property
+  - **Label**: Display name shown in the HubSpot interface
+  - **Type**: Data type of the property (String, Number, Option)
+  - **Object**: The CRM object it belongs to (Contact or Company)
+  - **Unique**: Whether the property should have unique values
+  - **CustomerId**: Identifier for the customer who owns the property
+  - **ModificationMetadata**: Information about when and who modified the property
 
 #### Property Mappings
 Property mapping refers to the configuration process where users set up the rules or criteria that define how properties from their native system should map to HubSpot properties. This ensures data consistency when syncing between systems.:
@@ -50,7 +53,10 @@ Property mapping refers to the configuration process where users set up the rule
 - **ModificationMetadata**: Information about when and who modified the mapping
 
 ## Why is this project useful
-
+- **Use an external OAuth service for HubSpot authentication**:
+   - Integrates with the [HubSpot OAuth Service](https://github.com/hubspotdev/oauth-service/tree/containerization) for secure token management
+   - Handles OAuth 2.0 processes including initial installation and token refresh
+   - Stores OAuth refresh and access tokens in a dedicated PostgreSQL database
 - **Comprehensive Property Management**: Provides endpoints for managing properties and their mappings between native systems and HubSpot, allowing for complex data synchronization.
 - **Data Consistency**: Ensures data consistency across platforms by:
   - Maintaining property mappings in a local database
@@ -68,20 +74,31 @@ Property mapping refers to the configuration process where users set up the rule
 
 2. If you haven't done so yet, please make sure to install [Docker](https://www.docker.com/get-started/) on your local environment.
 
-3. Create the .env file with these entries (see .env.example):
-   - DATABASE_URL - PostgreSQL connection string
-   - POSTGRES_USER - PostgreSQL username (default: postgres)
-   - POSTGRES_PASSWORD - PostgreSQL password (default: postgres)
-   - POSTGRES_DB - PostgreSQL database name (default: hubspot_sync)
-   - OAUTH_SERVICE_URL - URL of the external OAuth service
 
-4. Ensure the OAuth service is running and accessible. The OAuth service must have the following HubSpot scopes configured for this application to function properly:
-   - `crm.schemas.companies.write` - Create, delete, or make changes to property settings for companies
-   - `crm.schemas.contacts.write` - Create, delete, or make changes to property settings for contacts
-   - `crm.schemas.companies.read` - View details about property settings for companies
-   - `crm.schemas.contacts.read` - View details about property settings for contacts
+3. Create two environment files (see .env.example and oauth-service.env.example):
 
-5. Build and run the application:
+   a. `.env` file for the main application:
+   ```
+   DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+   POSTGRES_USER=postgres
+   POSTGRES_PASSWORD=postgres
+   POSTGRES_DB=hubspot_sync
+   OAUTH_SERVICE_URL=http://oauth-service:3001
+   ```
+
+   b. `oauth-service.env` file for the OAuth service:
+   ```
+   CLIENT_ID=your_client_id
+   CLIENT_SECRET=your_client_secret
+   DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@oauth-db:5432/${POSTGRES_DB}
+   SCOPES=crm.schemas.companies.write crm.schemas.contacts.write crm.schemas.companies.read crm.schemas.contacts.read
+
+   POSTGRES_USER=postgres
+   POSTGRES_PASSWORD=postgres
+   POSTGRES_DB=oauth_service
+   ```
+
+4. Build and run the application:
    ```bash
    # For development:
    docker-compose up --build
@@ -89,6 +106,11 @@ Property mapping refers to the configuration process where users set up the rule
    # For production:
    docker-compose -f docker-compose.yml up --build
    ```
+5. Initialize OAuth token:
+   - Visit `http://localhost:3001/install`
+   - Click the authorization link
+   - Complete the HubSpot OAuth flow
+   - A token will be stored with customerId="1"
 
 ### Endpoints:
 

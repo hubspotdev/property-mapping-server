@@ -3,67 +3,7 @@
 
 version: '3.8'
 services:
-  # Main application service
-  app:
-    build:
-      context: .
-      target: production  # Uses production target from Dockerfile
-    command: npm run start
-    ports:
-      - "3000:3000"  # Maps container port 3000 to host port 3000
-    env_file:
-      - .env  # Loads environment variables from .env file
-    environment:
-      NODE_ENV: production
-    depends_on:
-      db:
-        condition: service_healthy  # Waits for database to be ready
-      prisma-migrate:
-        condition: service_completed_successfully  # Waits for migrations to complete
-      oauth-check:
-        condition: service_healthy  # Waits for OAuth service to be ready
-    networks:
-      - default  # Internal network for app and database communication
-      - oauth-service_oauth-network  # External network for OAuth service
-      - frontend-network  # Add this line to connect to frontend network
-    restart: always  # Automatically restarts the container if it crashes
-    healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:3000/api-docs || exit 1"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 20s
-
-  # Database migration service - runs once before app starts
-  prisma-migrate:
-    build:
-      context: .
-      target: production
-    command: npx prisma migrate deploy  # Runs database migrations
-    env_file:
-      - .env
-    depends_on:
-      db:
-        condition: service_healthy  # Waits for database to be ready
-    networks:
-      - default
-
-  # OAuth service health check
-  oauth-check:
-    image: curlimages/curl:latest
-    command: sleep infinity  # Keeps container running for health checks
-    healthcheck:
-      test: ["CMD-SHELL", "curl -f ${OAUTH_SERVICE_URL}/api/get-install-url"]  # Verifies OAuth service is accessible
-      interval: 5s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
-    env_file:
-      - .env
-    networks:
-      - oauth-service_oauth-network
-
-  # PostgreSQL database service
+  # Main application database
   db:
     image: postgres:15
     ports:
@@ -82,15 +22,113 @@ services:
     networks:
       - default
 
+  # OAuth service database
+  # Separate PostgreSQL database for the OAuth service to store tokens and auth data
+  oauth-db:
+    image: postgres:15
+    env_file:
+      - ./oauth-service.env  # Loads environment variables from oauth-service.env
+    volumes:
+      - oauth_postgres_data:/var/lib/postgresql/data  # Persists OAuth database data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${OAUTH_POSTGRES_USER:-postgres}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - default
+
+  # Main application's migration service - runs once before app starts
+  prisma-migrate:
+    build:
+      context: .
+      target: production
+    command: npx prisma migrate deploy  # Runs database migrations
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy  # Waits for database to be ready
+    networks:
+      - default
+
+  # OAuth service migration service
+  # Handles database migrations for the OAuth service
+  oauth-prisma-migrate:
+    build:
+      context: https://github.com/hubspotdev/oauth-service.git#containerization
+      target: production
+    command: npx prisma migrate deploy
+    env_file:
+      - ./oauth-service.env
+    depends_on:
+      oauth-db:
+        condition: service_healthy  # Waits for OAuth database to be healthy
+    networks:
+      - default
+
+  # Main application service
+  app:
+    build:
+      context: .
+      target: production  # Uses production target from Dockerfile
+    command: npm run start
+    ports:
+      - "3000:3000"  # Maps container port 3000 to host port 3000
+    env_file:
+      - .env  # Loads environment variables from .env file
+    environment:
+      NODE_ENV: production
+    depends_on:
+      db:
+        condition: service_healthy  # Waits for database to be ready
+      prisma-migrate:
+        condition: service_completed_successfully  # Waits for migrations to complete
+      oauth-service:
+        condition: service_healthy  # Waits for OAuth service
+    networks:
+      - default  # Internal network for app and database communication
+      - frontend-network  # Add this line to connect to frontend network
+    restart: always  # Automatically restarts the container if it crashes
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3000/api-docs || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  # OAuth service
+  # Handles HubSpot OAuth authentication and token management
+  oauth-service:
+    build:
+      context: https://github.com/hubspotdev/oauth-service.git#containerization
+    env_file:
+      - ./oauth-service.env
+    ports:
+      - "3001:3001"  # Exposes the OAuth service on port 3001
+    depends_on:
+      oauth-db:
+        condition: service_healthy  # Waits for OAuth database
+      oauth-prisma-migrate:
+        condition: service_completed_successfully  # Waits for OAuth migrations
+    networks:
+      - default
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3001/api/get-install-url || exit 1"]  # Checks if OAuth service is ready
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    restart: always
+
 # Volume definitions
 volumes:
   postgres_data:  # Named volume for database persistence
+  oauth_postgres_data:  # For OAuth service database
 
 # Network definitions
 networks:
   default:  # Internal network for service communication
     driver: bridge
-  oauth-service_oauth-network:  # External network for OAuth service
-    external: true
   frontend-network:  # New network for frontend communication
     external: true   # This allows the frontend container to connect to it
