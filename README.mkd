@@ -1,3 +1,8 @@
+![Containerization Available](https://img.shields.io/badge/Containerization-Available-blue)
+
+> ⚠️ **For Docker users:**  
+> Switch to the [`containerization`](https://github.com/hubspotdev/property-mapping-server/tree/containerization) branch for Docker setup and usage instructions.
+
 # Property Mappings Server
 
 A Node.js server that manages property mappings between native systems and HubSpot, featuring OAuth integration, Prisma database management, and a caching layer for optimized HubSpot API interactions.
